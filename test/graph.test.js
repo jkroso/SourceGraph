@@ -159,15 +159,15 @@ describe('Graph(entry)', function () {
         })
         it('should resolve core modules with the highest priority', function (done) {
             var p = resolve(__dirname,  './fixtures/node/core/index.js')
-            var n1 = resolve(__dirname, '../src/node_natives/path.js')
-            var n2 = resolve(__dirname, '../src/node_natives/events.js')
+            var n1 = resolve(__dirname, '../src/node_modules/path.js')
+            var n2 = resolve(__dirname, '../src/node_modules/events.js')
             new Graph()
                 .trace(p)
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(3)
                     data[p].text.should.equal(read(p, 'utf-8'))
-                    data['/node_core/path.js'].text.should.equal(read(n1, 'utf-8'))
-                    data['/node_core/events.js'].text.should.equal(read(n2, 'utf-8'))
+                    data[n1].text.should.equal(read(n1, 'utf-8'))
+                    data[n2].text.should.equal(read(n2, 'utf-8'))
                     done()
                 })
         })
@@ -268,9 +268,8 @@ describe('Graph(entry)', function () {
                     paths.forEach(function (p) {
                         data[p].text.should.equal(read(p, 'utf-8'))
                     })
-                    data['/node_core/path.js'].text.should.equal(
-                        read(resolve(__dirname, '../src/node_natives/path.js'), 'utf-8')
-                    )
+                    var n1 = resolve(__dirname, '../src/node_modules/path.js')
+                    data[n1].text.should.equal(read(n1, 'utf-8'))
                     done()
                 })
     })
