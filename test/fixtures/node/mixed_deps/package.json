@@ -1,0 +1,8 @@
+{
+  "name":"foo",
+  "main": "main.js",
+  "dependencies": {
+    "aaa": "*",
+    "bbb": "*"
+  }
+}

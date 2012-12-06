@@ -1,0 +1,4 @@
+# .nodemonignore file
+
+*.json
+*built-graph.js

@@ -1,0 +1,7 @@
+{
+	"name" : "severaldeps",
+	"dependencies": {
+		"animal": "*"
+	},
+	"scripts":["index.js"]
+}
