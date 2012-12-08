@@ -92,42 +92,51 @@ proto.then = function (done, fail) {
     }).then(done, fail).throw()
 }
 
+proto.resolve = function (base, path) {
+    return resolveWithin(base, path, this)
+}
+
+function resolveWithin (base, path, graph) {
+    if (path[0] !== '.' 
+        && path[0] !== '/' 
+        && !path.match(/^[a-zA-Z]+:/)) {
+        var hash_checks = graph.hashResolvers, res
+        graph = graph.data
+        do {
+            for ( var i = 0, len = hash_checks.length; i < len; i++ ) {
+                if (res = hash_checks[i](graph, base, path)) return res
+            }
+        } 
+        while ((base = parentDir(base)) !== '/') 
+    }
+    else {
+        var paths = pathVariants(resolvePath(base, path))
+        graph = graph.data
+        for ( var i = paths.length; i-- ; ) {
+            if (paths[i] in graph) return paths[i]
+        }
+    }
+}
+
 function insert (base, path, graph) {
     var hash = graph.data, promise
 
     if (typeof path === 'object')
         return Promise.fulfilled(add(path))
 
-    if (!has(base, path)) {
+    if (!graph.has(base, path)) {
         return getFile(base, path, graph.osResolvers).then(add, fail)
     }
 
     function add (file) {
         var module = modulize(graph.types, file)
         if (module) graph.insert(module)
-        else {debugger;console.log('Ignoring '+file.path+' since it has no module type')}
+        else console.log('Ignoring '+file.path+' since it has no module type')
         return module
     }
 
     function fail (e) {
         graph.emit('load-error', path+' from '+base)
-    }
-    
-    function has (dir, name) {
-        if (name[0] !== '.' 
-            && name[0] !== '/' 
-            && !name.match(/^[a-zA-Z]+:/)) {
-            var hash_checks = graph.hashResolvers
-            do {
-                for ( var i = 0, len = hash_checks.length; i < len; i++ ) {
-                    if (hash_checks[i](hash, dir, name)) return true
-                }
-            } while ((dir = parentDir(dir)) !== '/') 
-            return false
-        }
-        else {
-            return graph.has(resolvePath(dir, name))
-        }
     }
 }
 
@@ -176,20 +185,12 @@ function pathVariants (p) {
     return results
 }
 
-proto.get = function (p) {
-    var paths = pathVariants(p),
-        i = paths.length
-    while (i--) {
-        if (paths[i] in this.data) return this.data[paths[i]]
-    }
+proto.get = function (base, path) {
+    return this.data[resolveWithin(base, path, this)]
 }
 
-proto.has = function (p) {
-    var paths = pathVariants(p)
-    for ( var i = paths.length; i-- ; ) {
-        if (paths[i] in this.data) return true
-    }
-    return false
+proto.has = function (base, path) {
+    return !!resolveWithin(base, path, this)
 }
 
 proto.insert = function (module) {
