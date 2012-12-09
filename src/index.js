@@ -39,9 +39,9 @@ function Graph (entry) {
     })
 
     // Copy the extension points so they can be safely over-ridden
-    this.types = require('./types').slice()
-    this.hashResolvers = require('./resolvers/hash.js').slice()
-    this.osResolvers = require('./resolvers/filesystem.js').slice()
+    this.types = []
+    this.hashResolvers = []
+    this.osResolvers = []
     this._fetchs = []
     
     this.data = Object.create(null)

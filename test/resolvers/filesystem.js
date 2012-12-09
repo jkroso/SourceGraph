@@ -1,8 +1,9 @@
 var detectSeries = require('async').detectSeries,
-    readFile = require('../file.js').readLocal,
-    variants = require('../file.js').variants,
+    readFile = require('../../src/file.js').readLocal,
+    variants = require('../../src/file.js').variants,
     pathmod = require('path'),
-    fs = require('fs')
+    fs = require('fs'),
+    core = pathmod.resolve(__dirname, '../../src/node_modules')+'/'
 
 var node_core = [
     'assert', 'buffer_ieee754', 'buffer', 'child_process', 'cluster', 'console',
@@ -16,7 +17,7 @@ module.exports = [
     function node_modules (dir, name, done) {
         // In node core modules take priority over custom
         if (node_core[name]) {
-            readFile(pathmod.resolve(__dirname, '../node_modules/'+name+'.js')).finish(done)
+            readFile(core+name+'.js').finish(done)
         } 
         else {
             var names = variants(name).map(function (name) {

@@ -5,5 +5,5 @@ function Module (file) {
     JS.call(this, file)
 }
 Module.prototype.requires = function () {
-    return ['handlebars']
+    return ['handlebars-runtime']
 }

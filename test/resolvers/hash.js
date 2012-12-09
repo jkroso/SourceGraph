@@ -1,5 +1,5 @@
 var Enumerable = require('enumerable-component')
-var core = require('path').resolve(__dirname, '../node_modules') + '/'
+var core = require('path').resolve(__dirname, '../../node_modules') + '/'
 
 module.exports = [
     function node_modules (hash, base, name) {

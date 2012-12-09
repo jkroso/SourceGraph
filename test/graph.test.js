@@ -6,10 +6,16 @@ var fs = require('fs'),
     should = require('chai').should(),
     Graph = require('../src');
 
-describe('Graph(entry)', function () {
+describe('Graph(entry)', function (graph) {
+    beforeEach(function () {
+        graph = new Graph
+        graph.types = require('./types').slice()
+        graph.hashResolvers = require('./resolvers/hash').slice()
+        graph.osResolvers = require('./resolvers/filesystem').slice()
+    })
     it('can load a single file', function (done) {
         var p = path.resolve(__dirname, './fixtures/simple/index.js')
-        new Graph()
+        graph
             .add(p)
             .then(function (files) {
                 Object.keys(files).should.have.a.lengthOf(1)
@@ -21,7 +27,7 @@ describe('Graph(entry)', function () {
     it('can load several files', function (done) {
         var p1 = path.resolve(__dirname, './fixtures/simple/index.js');
         var p2 = path.resolve(__dirname, './fixtures/simple/has_dependency.js');
-        new Graph()
+        graph
             .add(p1)
             .add(p2)
             .then(function (files) {
@@ -33,7 +39,7 @@ describe('Graph(entry)', function () {
     })
     it('can load with one relative dependency', function (done) {
         var p = path.resolve(__dirname, './fixtures/simple/has_dependency.js')
-        new Graph()
+        graph
             .trace(p)
             .then(function (files) {
                 Object.keys(files).should.have.a.lengthOf(2)
@@ -43,11 +49,11 @@ describe('Graph(entry)', function () {
     })
     it('can define custom handlers', function(done) {
         var p = path.resolve(__dirname, './fixtures/non_js/example.rndom');
-        new Graph()
+        graph
             .addType({
                 re: /\.rndom$/,
                 constructor: function (file) {
-                    require('../src/types/javascript.js').call(this, file)
+                    require('./types/javascript.js').call(this, file)
                     this.requires = function () {
                         return []
                     }
@@ -59,11 +65,12 @@ describe('Graph(entry)', function () {
                 data[p].text.should.equal(read(p, 'utf-8'))
                 done()
             })
+            .throw()
     })
     describe('Loading with protocols (e.g. http:)', function () {
         it('simple one file case', function (done) {
             var p = 'https://raw.github.com/jkroso/LP/master/src/LP.js'
-            new Graph()
+            graph
                 .trace(p)
                 .then(function (files) {
                     Object.keys(files).should.have.a.lengthOf(1)
@@ -77,7 +84,7 @@ describe('Graph(entry)', function () {
         it('can include a simple npm package', function(done) {
             var p = resolve(__dirname, './fixtures/node/expandsingle/index.js')
             var n = resolve(__dirname, './fixtures/node/expandsingle/node_modules/foo.js')
-            new Graph()
+            graph
                 .trace(p)
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(2)
@@ -89,8 +96,7 @@ describe('Graph(entry)', function () {
         it('even if it isn\'t relative but has a .js on the end', function (done) {
             var p = resolve(__dirname, './fixtures/node/with_extension/index.js')
             var n = resolve(__dirname, './fixtures/node/with_extension/node_modules/foo.js')
-            debugger;
-            new Graph()
+            graph
                 .trace(p)
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(2)
@@ -102,7 +108,7 @@ describe('Graph(entry)', function () {
         it('can include a npm package folder from an index.js', function (done) {
             var p = resolve(__dirname, 'fixtures/node/expandindex/index.js')
             var n = resolve(__dirname, './fixtures/node/expandindex/node_modules/foo/index.js')
-            new Graph()
+            graph
                 .trace(p)
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(2)
@@ -115,7 +121,7 @@ describe('Graph(entry)', function () {
             var p = resolve(__dirname, 'fixtures/node/expandpackage/index.js')
             var n1 = resolve(__dirname, './fixtures/node/expandpackage/node_modules/foo/package.json')
             var n2 = resolve(__dirname, './fixtures/node/expandpackage/node_modules/foo/lib/sub.js')
-            new Graph()
+            graph
                 .trace(p)
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(3)
@@ -129,7 +135,7 @@ describe('Graph(entry)', function () {
             var p = resolve(__dirname, 'fixtures/node/hassubdependency/index.js')
             var n1 = resolve(__dirname, './fixtures/node/hassubdependency/node_modules/foo/index.js')
             var n2 = resolve(__dirname, './fixtures/node/hassubdependency/node_modules/foo/node_modules/bar/index.js')
-            new Graph()
+            graph
                 .trace(p)
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(3)
@@ -145,7 +151,7 @@ describe('Graph(entry)', function () {
             var n2 = resolve(__dirname, './fixtures/node/mixed_deps/node_modules/aaa/index.js')
             var n3 = resolve(__dirname, './fixtures/node/mixed_deps/node_modules/bbb.js')
             var n4 = resolve(__dirname, './fixtures/node/mixed_deps/node_modules/aaa/node_modules/ccc/index.js')
-            new Graph()
+            graph
                 .trace(p)
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(5)
@@ -161,7 +167,7 @@ describe('Graph(entry)', function () {
             var p = resolve(__dirname,  './fixtures/node/core/index.js')
             var n1 = resolve(__dirname, '../src/node_modules/path.js')
             var n2 = resolve(__dirname, '../src/node_modules/events.js')
-            new Graph()
+            graph
                 .trace(p)
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(3)
@@ -177,7 +183,7 @@ describe('Graph(entry)', function () {
         // According to the component spec a component must always include a main file
         it.skip('should always include the component.json even if nothing else', function (done) {
             var c1 = resolve(__dirname, './fixtures/cc/empty/component.json')
-            new Graph()
+            graph
                 .trace(c1)
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(1)
@@ -190,7 +196,7 @@ describe('Graph(entry)', function () {
                 resolve(__dirname, './fixtures/cc/simple/component.json'),
                 resolve(__dirname, './fixtures/cc/simple/index.js')
             ]
-            new Graph()
+            graph
                 .trace(paths[0])
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(paths.length)
@@ -206,7 +212,7 @@ describe('Graph(entry)', function () {
                 resolve(__dirname, './fixtures/cc/components/component-inherit/component.json'),
                 resolve(__dirname, './fixtures/cc/components/component-inherit/index.js'),
             ];
-            new Graph()
+            graph
                 .trace(paths[0])
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(paths.length+2)
@@ -226,7 +232,7 @@ describe('Graph(entry)', function () {
                 resolve(__dirname, './fixtures/cc/components/component-inherit/component.json'),
                 resolve(__dirname, './fixtures/cc/components/component-inherit/index.js'),
             ];
-            new Graph()
+            graph
                 .trace(paths[0])
                 .then(function(data) {
                     Object.keys(data).should.have.a.lengthOf(paths.length+3)
@@ -251,11 +257,11 @@ describe('Graph(entry)', function () {
                 resolve(__dirname, './fixtures/kitchen/components/component-emitter/component.json'),
                 resolve(__dirname, './fixtures/kitchen/components/component-emitter/index.js'),
             ];
-            new Graph()
+            graph
                 .addType({
                     re: /\.htempl$/,
                     constructor: function (file) {
-                        require('../src/types/javascript.js').call(this, file)
+                        require('./types/javascript.js').call(this, file)
                         this.requires = function () {
                             return []
                         }
