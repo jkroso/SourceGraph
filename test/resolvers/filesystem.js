@@ -36,7 +36,7 @@ module.exports = [
         }
     },
     function components (dir, name, done) {
-        var name = pathmod.join(dir, 'components', name, 'component.json')
+        name = pathmod.join(dir, 'components', name, 'component.json')
         fs.exists(name, function (bool) {
             if (bool) {
                 readFile(name).finish(function (file) {

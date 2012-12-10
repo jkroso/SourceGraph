@@ -38,8 +38,7 @@ function Graph (entry) {
         log(e+'\n')
     })
 
-    // Copy the extension points so they can be safely over-ridden
-    this.types = []
+    this.fileTypes = []
     this.hashResolvers = []
     this.osResolvers = []
     this._fetchs = []
@@ -50,13 +49,29 @@ function Graph (entry) {
 }
 
 proto.addResolver = function (os, hash) {
-    this.osResolvers.push(os)
-    this.hashResolvers.push(hash)
+    return this.addOSResolver(os).addHashResolver(hash)
+}
+
+proto.addOSResolver = function (fn) {
+    if (typeof fn !== 'function')
+        throw new Error('OS resolver must be function')
+    this.osResolvers.push(fn)
+    return this
+}
+
+proto.addHashResolver = function (fn) {
+    if (typeof fn !== 'function')
+        throw new Error('Hash resolver must be function')
+    this.hashResolvers.push(fn)
     return this
 }
 
 proto.addType = function (type) {
-    this.types.push(type)
+    if (!(type.if instanceof RegExp))
+        throw new Error('File handler must have a RegExp under its `if` property')
+    if (typeof type.make !== 'function')
+        throw new Error('File handler must have a Function under its `make` property')
+    this.fileTypes.push(type)
     return this
 }
 
@@ -129,7 +144,7 @@ function insert (base, path, graph) {
     }
 
     function add (file) {
-        var module = modulize(graph.types, file)
+        var module = modulize(graph.fileTypes, file)
         if (module) graph.insert(module)
         else console.log('Ignoring '+file.path+' since it has no module type')
         return module
@@ -142,8 +157,8 @@ function insert (base, path, graph) {
 
 function modulize (types, file) {
     for ( var i = 0, len = types.length; i < len; i++ ) {
-        if (types[i].re.test(file.path)) 
-            return new types[i].constructor(file)
+        if (types[i].if.test(file.path)) 
+            return new types[i].make(file)
     }
 }
 

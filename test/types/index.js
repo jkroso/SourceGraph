@@ -1,31 +1,31 @@
 module.exports = [
 	{
-		re: /\/package\.json$/,
-		constructor: require('./package.json.js')
+		if: /\/package\.json$/,
+		make: require('./package.json.js')
 	},
 	{
-		re: /\/component\.json$/,
-		constructor: require('./component.json.js')
+		if: /\/component\.json$/,
+		make: require('./component.json.js')
 	},
 	{
 		// Aliased component
-		re: /\/components\/\w+$/,
-		constructor: require('./javascript.js')
+		if: /\/components\/\w+$/,
+		make: require('./javascript.js')
 	},
 	{
-		re: /\.js$/,
-		constructor: require('./javascript.js')
+		if: /\.js$/,
+		make: require('./javascript.js')
 	},
 	{
-		re: /\.json$/,
-		constructor: require('./json.js')
+		if: /\.json$/,
+		make: require('./json.js')
 	},
 	{
-		re: /\.css$/,
-		constructor: require('./css.js')
+		if: /\.css$/,
+		make: require('./css.js')
 	},
 	{
-		re: /\.hbs$/,
-		constructor: require('./handlebars.js')
+		if: /\.hbs$/,
+		make: require('./handlebars.js')
 	}
 ]

@@ -9,9 +9,15 @@ var fs = require('fs'),
 describe('Graph(entry)', function (graph) {
     beforeEach(function () {
         graph = new Graph
-        graph.types = require('./types').slice()
-        graph.hashResolvers = require('./resolvers/hash').slice()
-        graph.osResolvers = require('./resolvers/filesystem').slice()
+        require('./types').forEach(function(type){
+            graph.addType(type)
+        })
+        require('./resolvers/filesystem').forEach(function (fn) {
+            graph.addOSResolver(fn)
+        })
+        require('./resolvers/hash').forEach(function (fn) {
+            graph.addHashResolver(fn)
+        })
     })
     it('can load a single file', function (done) {
         var p = path.resolve(__dirname, './fixtures/simple/index.js')
@@ -22,6 +28,8 @@ describe('Graph(entry)', function (graph) {
                 Object.keys(files)[0].should.equal(p)
                 files[p].text.should.equal(read(p, 'utf-8').toString())
                 done()
+            }, function (e) {
+                done(e[0])
             })
     })
     it('can load several files', function (done) {
@@ -51,8 +59,8 @@ describe('Graph(entry)', function (graph) {
         var p = path.resolve(__dirname, './fixtures/non_js/example.rndom');
         graph
             .addType({
-                re: /\.rndom$/,
-                constructor: function (file) {
+                if: /\.rndom$/,
+                make: function (file) {
                     require('./types/javascript.js').call(this, file)
                     this.requires = function () {
                         return []
@@ -259,8 +267,8 @@ describe('Graph(entry)', function (graph) {
             ];
             graph
                 .addType({
-                    re: /\.htempl$/,
-                    constructor: function (file) {
+                    if: /\.htempl$/,
+                    make: function (file) {
                         require('./types/javascript.js').call(this, file)
                         this.requires = function () {
                             return []
