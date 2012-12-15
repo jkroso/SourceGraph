@@ -29,13 +29,13 @@ proto.constructor = Graph
 function Graph (entry) {
     if (!(this instanceof Graph)) return new Graph(entry)
     this.on('new-module', function (m) {
-        log('New registration: '.bold.blue)
-        log((parentDir(m.path)+'/').grey)
-        log(fileName(m.path+'\n').blue)
+        log('New registration: '.bold.blue 
+            + parentDir(m.path)+'/'.grey
+            + fileName(m.path+'\n').blue
+        )
     })
     this.on('load-error', function (e) {
-        log('Failed registration: '.bold.red)
-        log(e+'\n')
+        log('Failed registration: '.bold.red + e + '\n')
     })
 
     this.fileTypes = []
@@ -112,6 +112,7 @@ proto.resolve = function (base, path) {
 }
 
 function resolveWithin (base, path, graph) {
+    if (!path) throw new Error('No path provided. Something required by '+base+' is the problem')
     if (path[0] !== '.' 
         && path[0] !== '/' 
         && !path.match(/^[a-zA-Z]+:/)) {
@@ -146,12 +147,13 @@ function insert (base, path, graph) {
     function add (file) {
         var module = modulize(graph.fileTypes, file)
         if (module) graph.insert(module)
-        else console.log('Ignoring '+file.path+' since it has no module type')
+        else log('Ignoring '+file.path+' since it has no module type\n'.yellow)
         return module
     }
 
     function fail (e) {
         graph.emit('load-error', path+' from '+base)
+        // throw new Error('Unable to resolve '+path+' from '+base)
     }
 }
 

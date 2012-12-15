@@ -178,6 +178,7 @@ describe('Graph(entry)', function (graph) {
             graph
                 .trace(p)
                 .then(function(data) {
+                    debugger;
                     Object.keys(data).should.have.a.lengthOf(3)
                     data[p].text.should.equal(read(p, 'utf-8'))
                     data[n1].text.should.equal(read(n1, 'utf-8'))

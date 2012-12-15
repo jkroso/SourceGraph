@@ -1,21 +1,19 @@
 {
   "name": "SourceGraph",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "src/index.js",
-  "bin": {
-    "graph": "bin/graph"
-  },
   "dependencies": {
-    "detective": "",
     "laissez-faire": "",
     "request": "",
-    "commander": "",
     "async": "",
-    "colors": ""
+    "colors": "",
+    "promises": "",
+    "jkroso-emitter": ""
   },
   "devDependencies": {
     "mocha": "",
-    "chai": ""
+    "chai": "",
+    "detective": ""
   },
   "scripts" : {
     "test": "mocha -R spec test/graph.test.js"
