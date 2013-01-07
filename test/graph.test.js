@@ -77,13 +77,13 @@ describe('Graph(entry)', function (graph) {
     })
     describe('Loading with protocols (e.g. http:)', function () {
         it('simple one file case', function (done) {
-            var p = 'https://raw.github.com/jkroso/LP/master/src/LP.js'
+            var p = 'https://raw.github.com/jkroso/Emitter/master/src/index.js'
             graph
                 .trace(p)
                 .then(function (files) {
                     Object.keys(files).should.have.a.lengthOf(1)
                     Object.keys(files)[0].should.equal(p)
-                    files[p].text[0].should.equal('d')
+                    files[p].text[0].should.equal('m')
                     done()
                 })
         })
@@ -139,7 +139,7 @@ describe('Graph(entry)', function (graph) {
                     done()
                 })
         })
-        it('when a dependency has a (sub)dependency, it gets resolved as well', function(done) {
+        it('when a dependency has a dependency it gets resolved as well', function(done) {
             var p = resolve(__dirname, 'fixtures/node/hassubdependency/index.js')
             var n1 = resolve(__dirname, './fixtures/node/hassubdependency/node_modules/foo/index.js')
             var n2 = resolve(__dirname, './fixtures/node/hassubdependency/node_modules/foo/node_modules/bar/index.js')
