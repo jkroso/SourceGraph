@@ -1,3 +1,7 @@
 *.sublime-*
 /colony
 /node_modules
+/docs
+/example
+/test
+/Makefile

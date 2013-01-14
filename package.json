@@ -1,21 +1,28 @@
 {
   "name": "sourcegraph",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "main": "src/index.js",
   "dependencies": {
     "laissez-faire": "",
     "request": "",
-    "async": "",
+    "async": "~0.1.22",
     "colors": "",
-    "jkroso-promises": "",
-    "jkroso-emitter": ""
+    "when-all": "jkroso/when-all",
+    "when-first": "jkroso/when-first",
+    "emitter": "jkroso/Emitter",
+    "debug": "*",
+    "async-loop": "jkroso/async-loop",
+    "async-forEach": "jkroso/async-forEach"
   },
   "devDependencies": {
     "mocha": "",
-    "chai": "",
-    "detective": ""
+    "chai": "~1.4.2",
+    "detective": "~0.2.1",
+    "enumerable-component": "~0.3.1",
+    "prettyjson": "~0.7.1",
+    "colony": "0.0.3"
   },
-  "scripts" : {
+  "scripts": {
     "test": "mocha -R spec test/graph.test.js"
   }
 }
