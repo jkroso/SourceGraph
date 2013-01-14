@@ -130,6 +130,13 @@ graph.add('/current/working/directory', '../super-module')
 ## proto.has()
 
   Is the file already listed in the sourcegraph
+## Todo
+
+- [ ] Come up with a decent plugin system
+- [ ] Make plugins easy to consume e.g. `.use('node')` 
+- [ ] Improve the level of parrallel loading
+- [ ] Consider adding a watch system
+
 ## Release History
 
 _none yet_
