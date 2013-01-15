@@ -1,3 +1,4 @@
 *.sublime-*
 /colony
 /node_modules
+/node

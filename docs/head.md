@@ -18,8 +18,8 @@ Its output should look something like this on your machine:
 
 ```
 - 
-  path:         /home/jkroso/Dev/Libraries/SourceGraph/example/husband.js
-  base:         /home/jkroso/Dev/Libraries/SourceGraph/example
+  path:         /husband.js
+  base:         
   ext:          js
   name:         husband
   text:         require('./wife')
@@ -28,8 +28,8 @@ Its output should look something like this on your machine:
   requires: 
     - ./wife
 - 
-  path:         /home/jkroso/Dev/Libraries/SourceGraph/example/wife.js
-  base:         /home/jkroso/Dev/Libraries/SourceGraph/example
+  path:         /wife.js
+  base:         
   ext:          js
   name:         wife
   text:         require('./children')
@@ -38,8 +38,8 @@ Its output should look something like this on your machine:
   requires: 
     - ./children
 - 
-  path:         /home/jkroso/Dev/Libraries/SourceGraph/example/children/index.js
-  base:         /home/jkroso/Dev/Libraries/SourceGraph/example/children
+  path:         /children/index.js
+  base:         /children
   ext:          js
   name:         index
   text:         require('./tracy');require('./bow')
@@ -49,8 +49,8 @@ Its output should look something like this on your machine:
     - ./tracy
     - ./bow
 - 
-  path:         /home/jkroso/Dev/Libraries/SourceGraph/example/children/tracy.js
-  base:         /home/jkroso/Dev/Libraries/SourceGraph/example/children
+  path:         /children/tracy.js
+  base:         /children
   ext:          js
   name:         tracy
   text:         module.exports = 'mess'
@@ -59,8 +59,8 @@ Its output should look something like this on your machine:
   requires: 
     (empty array)
 - 
-  path:         /home/jkroso/Dev/Libraries/SourceGraph/example/children/bow.js
-  base:         /home/jkroso/Dev/Libraries/SourceGraph/example/children
+  path:         /children/bow.js
+  base:         /children
   ext:          js
   name:         bow
   text:         module.exports = 'mess'
