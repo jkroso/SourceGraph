@@ -56,8 +56,30 @@ describe('trace(path)', function () {
 			files.should.have.a.lengthOf(2)
 			files[p1].text.should.equal(read(p1, 'utf-8'))
 			files[p2].text.should.equal(read(p2, 'utf-8'))
-			done()
-		})
+		}).nend(done)
+	})
+})
+
+describe('resolveInternal(base, name)', function () {
+	it('should resolve a relative path', function (done) {
+		var base = __dirname + '/fixtures/simple'
+		var p1 = base+'/index.js'
+		var p2 = base+'/has_dependency.js'
+
+		graph.trace(p2).then(function (files) {
+			graph.resolveInternal(base, './index').should.equal(p1)
+			graph.resolveInternal(base, './has_dependency.js').should.equal(p2)
+		}).nend(done)
+	})
+
+	it('should resolve a magic path', function (done) {
+		var base = __dirname+'/fixtures/node/expandsingle'
+		var p1 = base+'/index.js' 
+		var p2 = base+'/node_modules/foo.js' 
+		
+		graph.trace(p1).then(function (files) {
+			graph.resolveInternal(base, 'foo').should.equal(p2)
+		}).nend(done)
 	})
 })
 

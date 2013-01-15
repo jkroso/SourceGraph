@@ -8,12 +8,13 @@ var getExt = require('path').extname
   , all = require('when-all')
   , debug = require('debug')('sourcegraph')
 
-require('colors')
-
 exports = module.exports = Graph
 
+/*!
+ * Inherit from Emitter
+ */
 var proto = Graph.prototype
-Emitter.mixin(proto)
+proto.__proto__ = Emitter.prototype
 
 /**
  * Graphs represent the complete source code of your program.
@@ -27,14 +28,14 @@ Emitter.mixin(proto)
  */
 
 function Graph () {
+	Emitter.call(this)
 	this._fileTypes = []
 	this._hashResolvers = []
 	this._osResolvers = []
 	this._pending = []
 	this.data = []
+	this.getFile = getFile(this._osResolvers)
 }
-
-proto.getFile = getFile([])
 
 proto.addResolver = function (os, hash) {
 	return this.addOSResolver(os).addHashResolver(hash)
@@ -141,7 +142,7 @@ proto.resolveInternal = function (base, path) {
 		var paths = pathVariants(path)
 		  , i = paths.length
 		while (i--) {
-			if (paths[i] in this) return paths[i]
+			if (paths[i] in hash) return paths[i]
 		}
 	}
 	// Its a component or package name
