@@ -1,4 +1,4 @@
-all: test
+all: colony Readme.md
 
 install: 
 	@npm install
