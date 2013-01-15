@@ -109,20 +109,15 @@ proto.trace = function (entry) {
 }
 
 /**
- * Generate an array of all modules within the sourcegraph
+ * Retrieve the value of the sourcegraph
  *
  * @param {Function} callback, for when the values are ready
+ * @param {Function} fail, error handler
  * @return {Promise} for an array of modules
  */
 
-proto.then = function (callback) {
-	var self = this
-	if (this._pending.length) {
-		return all(this._pending).then(function (d) {
-			self._pending.length = 0
-			return self.data
-		}).then(callback)
-	}
+proto.then = function (callback, fail) {
+	return all(this._pending).yeild(this.data).then(callback, fail)
 }
 
 /**
