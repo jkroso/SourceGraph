@@ -16,6 +16,7 @@ function Module (file) {
 	this.base = dirname(location)
 	this.ext = extname(location)
 	this.name = basename(location, this.ext)
+	this.ext = this.ext.replace(/^\./, '')
 	this.text = file.text
 	this.lastModified = file['last-modified']
 }
