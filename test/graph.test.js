@@ -263,6 +263,7 @@ describe('component/component magic', function () {
 it('Kitchen sink', function (done) {
 	var base = __dirname+'/fixtures/kitchen'
 	var paths = [
+			base+'/component.json',
 			base+'/index.js',
 			base+'/tip.htempl',
 			base+'/Subscription.js',
@@ -286,11 +287,13 @@ it('Kitchen sink', function (done) {
 				}
 			})
 			.trace(paths[0])
-			.add(paths[1])
+			.add(paths[2])
 			.then(function(data) {
 				data.should.have.a.lengthOf(paths.length+6)
 				paths.forEach(function (p) {
-					data[p].text.should.equal(read(p, 'utf-8'))
+					data.should.have.property(p)
+						.and.property('text')
+						.and.equal(read(p, 'utf-8'))
 				})
 				var n1 = __dirname+'/node_modules/path.js'
 				data[n1].text.should.equal(read(n1, 'utf-8'))
