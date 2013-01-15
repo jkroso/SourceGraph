@@ -2,7 +2,7 @@ var fs = require('fs')
   , dirname = require('path').dirname
   , resolvePath = require('path').resolve
   , Promise = require('laissez-faire')
-  , request = require('request')
+  , request = require('superagent')
   , first = require('when-first')
   , doUntil = require('async-loop').doUntil
   , series = require('async-forEach').series
@@ -169,16 +169,17 @@ exports.remote = getRemote
 function getRemote (p) {
 	return first(variants(p).map(function (p) {
 		var promise = new Promise
-		debug('Remote requesting %', p)
-		request.get(p, function (error, res, body) {
-			if (error || res.statusCode >= 400) 
-				promise.reject(error), debug('Response % => %d', p, res.statusCode)
-			promise.resolve({
-				'path': p,
-				'text': body,
-				'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
-			})
-			debug('Remote recieve %', p)
+		debug('Remote requesting %s', p)
+		request.get(p).buffer().end(function (res) {
+			debug('Response %s => %d', p, res.status)
+			if (!res.ok)
+				promise.reject(res.error)
+			else 
+				promise.resolve({
+					'path': p,
+					'text': res.text,
+					'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
+				})
 		})
 		return promise
 	}))

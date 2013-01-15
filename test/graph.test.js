@@ -96,13 +96,13 @@ it('can define custom handlers', function(done) {
 })
 
 describe('Loading with protocols (e.g. http:)', function () {
-	var p = 'https://raw.github.com/jkroso/Emitter/master/src/index.js'
+	var p = 'http://code.jquery.com/jquery-1.8.0.js'
 	
 	it('simple one file case', function (done) {
 		graph.add(p).then(function (files) {
 			files.should.have.a.lengthOf(1)
 			files[0].path.should.equal(p)
-			files[0].text.should.include('emitter')
+			files[0].text.should.include('hack')
 		}).nend(done)
 	})
 })

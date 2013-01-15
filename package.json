@@ -3,15 +3,15 @@
   "version": "0.2.2",
   "main": "src/index.js",
   "dependencies": {
-    "laissez-faire": "",
-    "request": "",
+    "laissez-faire": "0.9.x",
     "async": "~0.1.22",
     "when-all": "~0.1.0",
     "when-first": "~0.1.0",
     "emitter": "~0.5.0",
     "debug": "*",
     "async-loop": "~0.1.0",
-    "async-forEach": "~0.1.0"
+    "async-forEach": "~0.1.0",
+    "superagent": "~0.12.1"
   },
   "devDependencies": {
     "mocha": "",

@@ -9,9 +9,9 @@ var entry = __dirname + '/husband.js';
 var dirRegex = new RegExp('^'+__dirname);
 
 new Graph()
-  .use('javascript')
+	.use('javascript')
 	.trace(entry)
-  .then(function (files) {
+	.then(function (files) {
 		files.forEach(function (file) {
 			file.requires = file.requires()
 			file.base = file.base.replace(dirRegex, '')
