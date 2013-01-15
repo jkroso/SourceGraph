@@ -90,7 +90,6 @@ describe('magic(base, name, resolvers)', function () {
 			magic(__dirname, 'path', resolvers),
 			magic(__dirname, 'events', resolvers),
 			magic(__dirname, 'assert', resolvers),
-			magic(__dirname, 'http', resolvers),
 			magic(__dirname, 'querystring', resolvers),
 		]).nend(done)
 	})

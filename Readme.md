@@ -76,15 +76,17 @@ Its output should look something like this on your machine:
 var Graph = require('sourcegraph')
 ```
   - [Graph()](#graph)
+  - [proto.addType()](#protoaddtypetypeobject)
+  - [proto.use()](#protousenamestring)
   - [proto.trace()](#prototraceentrystring)
-  - [proto.then()](#protothencallbackfunction)
+  - [proto.then()](#protothencallbackfunctionfailfunction)
   - [proto.addModule()](#protoaddmodulebasestringpathstring)
   - [proto.add()](#protoaddpathstring)
   - [proto.insert()](#protoinsertmodulemodule)
   - [proto.get()](#protoget)
   - [proto.has()](#protohas)
 
-## Graph()
+### Graph()
 
   Graphs represent the complete source code of your program.
   They trace dependencies and give you a list of files at the end
@@ -97,15 +99,34 @@ new Graph().trace('/path/to/my/project').then(function(files){
 })
 ```
 
-## proto.trace(entry,:String)
+### proto.addType(type:Object)
+
+  Add a module definition. For example the definition of a javascript module
+  looks a bit like this.
+  
+```js
+graph.addType({
+  if: /\.js$/
+  make: function JS (file) {
+    this.path = file.path
+    this.text = file.text
+  }
+})
+```
+
+### proto.use(name:String...)
+
+  Load a plugin
+
+### proto.trace(entry,:String)
 
   Recursive version of `proto.add`
 
-## proto.then(callback,:Function)
+### proto.then(callback,:Function, fail,:Function)
 
-  Generate an array of all modules within the sourcegraph
+  Retrieve the value of the sourcegraph
 
-## proto.addModule(base:String, path:String)
+### proto.addModule(base:String, path:String)
 
   Add a module to the sourcegraph
   
@@ -115,25 +136,25 @@ graph.add('/current/working/directory', 'http://code.com/super-module')
 graph.add('/current/working/directory', '../super-module')
 ```
 
-## proto.add(path:String)
+### proto.add(path:String)
 
   Add a file
 
-## proto.insert(module:Module)
+### proto.insert(module:Module)
 
   Add a module to the sourcegraph
 
-## proto.get()
+### proto.get()
 
   Retrieve the module stored within the sourcegraph
 
-## proto.has()
+### proto.has()
 
   Is the file already listed in the sourcegraph
 ## Todo
 
-- [ ] Come up with a decent plugin system
-- [ ] Make plugins easy to consume e.g. `.use('node')` 
+- [x] Come up with a decent plugin system
+- [x] Make plugins easy to consume e.g. `.use('node')` 
 - [ ] Improve the level of parrallel loading
 - [ ] Consider adding a watch system
 

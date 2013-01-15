@@ -54,14 +54,13 @@ exports.fileSystem = function (dir, name, done) {
  * @param {String} dir
  * @param {String} name
  * @param {Object} hash contains all known files as keys
+ * @return {String} path of the module
  */
 
 exports.hashSystem = function (dir, name, hash) {
-	var match = variants(dir, name).filter(function (p) {
+	return variants(dir, name).filter(function (p) {
 		return !!hash[p]
 	})[0]
-
-	if (match) return hash[match]
 }
 
 /**

@@ -67,8 +67,7 @@ exports.fileSystem = function (dir, name, done) {
 	detectSeries(variants(dir, name), fs.exists, function(winner){
 		if (winner) {
 			readFile(winner).end(done)
-		} 
-		else {
+		} else {
 			// In node core modules take priority over custom
 			// This doesn't work when building projects with other systems so instead here 
 			// built in modules take the lowest priority. They probably should in node too but 
@@ -88,6 +87,7 @@ exports.fileSystem = function (dir, name, done) {
  * @param {String} dir
  * @param {String} name
  * @param {Object} hash contains all known files as keys
+ * @return {String} full path of the module
  */
 
 exports.hashSystem = function (dir, name, hash) {
@@ -99,7 +99,7 @@ exports.hashSystem = function (dir, name, hash) {
 
 	if (dir === '/' && hash[base+name+'.js'])
 		// Note: we always add ".js" at the end since node won't interpret those as core modules
-		return hash[base+name+'.js']
+		return base+name+'.js'
 }
 
 /**

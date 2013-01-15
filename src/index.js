@@ -37,24 +37,52 @@ function Graph () {
 	this.getFile = getFile(this._osResolvers)
 }
 
-proto.addResolver = function (os, hash) {
-	return this.addOSResolver(os).addHashResolver(hash)
-}
+/**
+ * Add a function to call when resolving named modules externally
+ * Take a look at the 'nodish' plugin for an example of what this 
+ * function might look like
+ *
+ * @param {Function} fn
+ * @api private
+ */
 
 proto.addOSResolver = function (fn) {
-	if (typeof fn !== 'function')
-		throw new Error('OS resolver must be function')
 	this._osResolvers.push(fn)
 	this.getFile = getFile(this._osResolvers)
 	return this
 }
 
+/**
+ * Add a function to call when resolving named modules internally
+ * Take a look at the 'component' plugin for an example of what this 
+ * function might look like
+ *
+ * @param {Function} fn
+ * @api private
+ */
+
 proto.addHashResolver = function (fn) {
-	if (typeof fn !== 'function')
-		throw new Error('Hash resolver must be function')
 	this._hashResolvers.push(fn)
 	return this
 }
+
+/**
+ * Add a module definition. For example the definition of a javascript module
+ * looks a bit like this.
+ *
+ *   graph.addType({
+ *     if: /\.js$/
+ *     make: function JS (file) {
+ *       this.path = file.path
+ *       this.text = file.text
+ *     }
+ *   })
+ *
+ * @param {Object} type 
+ *   `.if` should be a regex and will be matched again paths
+ *   `.make` should be a constructor
+ * @return {Self}
+ */
 
 proto.addType = function (type) {
 	if (!(type.if instanceof RegExp))
@@ -68,7 +96,7 @@ proto.addType = function (type) {
 /**
  * Load a plugin
  *
- * @param {String} name of the plugin
+ * @param {String...} name of the plugin(s)
  * @return {Self}
  */
 
@@ -98,7 +126,7 @@ proto.use = function (name) {
  * Recursive version of `proto.add`
  * 
  * @param  {String} entry, a path to a file
- * @return {Promise} for a nested array of modules
+ * @return {Self}
  */
 
 proto.trace = function (entry) {
@@ -150,7 +178,7 @@ proto.then = function (callback, fail) {
  * Determine the path of a module already stored with the sourcegraph
  *
  * @see addModule
- * @return {String} if a file exists its path will be returned
+ * @return {String} the full path of the file
  * @api private
  */
 
@@ -261,6 +289,7 @@ proto.addModule = function (base, path) {
  * @param {String} path absolute path
  * @public
  */
+
 proto.add = function (path) {
 	var promise = this.addModule('/', path)
 	promise && this._pending.push(promise)
@@ -272,6 +301,7 @@ proto.add = function (path) {
  *
  * @param {Module} module
  */
+
 proto.insert = function (module) {
 	this.emit('new-module', module)
 	this.data.push(module)
