@@ -6,15 +6,17 @@ var should = require('chai').should()
   , local = getFile.local
   , remote = getFile.remote
   , magic = getFile.magic
-  , resolvers = require('./resolvers/filesystem')
+  , nodeLoader = require('../src/plugins/nodeish').fileSystem
+  , componentLoader = require('../src/plugins/component').fileSystem
 
-var subject = path.join(__dirname, './types/javascript.js')
+  , resolvers = [nodeLoader, componentLoader]
 
 describe('readLocal(path)', function () {
+	var subject = __dirname+'/node_modules/path.js'
 	it('should return a promise for a file', function (done) {
 		readLocal(subject).then(function (file) {
 			file.should.have.property('path').and.equal(subject)
-			file.should.have.property('text').and.include('Module')
+			file.should.have.property('text').and.include('join')
 			file.should.have.property('last-modified').and.be.a('number')
 		}).nend(done)
 	})
@@ -23,12 +25,12 @@ describe('readLocal(path)', function () {
 describe('local(path)', function () {
 	it('should handle various forms of path slang', function (done) {
 		all([
-			__dirname+'/types/index.js',
-			__dirname+'/types/index',
-			__dirname+'/types/',
-			__dirname+'/types',
-			__dirname+'/types/javascript',
-			__dirname+'/types/javascript.js'
+			__dirname+'/node_modules/package/index.js',
+			__dirname+'/node_modules/package/index',
+			__dirname+'/node_modules/package/',
+			__dirname+'/node_modules/package',
+			__dirname+'/node_modules/path',
+			__dirname+'/node_modules/path.js'
 		].map(local)).nend(done)
 	})
 })
@@ -144,8 +146,8 @@ describe('getFile(base, path)', function (get) {
 	})
 
 	it('should fetch an absolute local path from a url base', function (done) {
-		get(jqHost, __dirname+'/types').then(function (resolved) {
-			return readLocal(__dirname+'/types/index.js').then(function (file) {
+		get(jqHost, __dirname+'/node_modules/package').then(function (resolved) {
+			return readLocal(__dirname+'/node_modules/package/index.js').then(function (file) {
 				file.should.deep.equal(resolved)
 			})
 		}).nend(done)

@@ -66,6 +66,35 @@ proto.addType = function (type) {
 }
 
 /**
+ * Load a plugin
+ *
+ * @param {String} name of the plugin
+ * @return {Self}
+ */
+
+proto.use = function (name) {
+	// Handle several args
+	if (arguments.length > 1) {
+		for (var i = 0, len = arguments.length; i < len; i++) {
+			this.use(arguments[i])
+		}
+		return this
+	}
+
+	var plug = require(__dirname+'/plugins/'+name)
+	debug('Plugin %s provides: %pj', name, Object.keys(plug))
+
+	plug.fileSystem && this.addOSResolver(plug.fileSystem)
+	plug.hashSystem && this.addHashResolver(plug.hashSystem)
+	
+	plug.types && plug.types.forEach(function (type) {
+		this.addType(type)
+	}, this)
+
+	return this
+}
+
+/**
  * Recursive version of `proto.add`
  * 
  * @param  {String} entry, a path to a file
@@ -96,10 +125,7 @@ proto.trace = function (entry) {
 		})
 
 		return all(deps).then(function (modules) {
-				debug('done')
 			return all(modules.filter(Boolean).map(trace))
-		}).end(function () {
-			debug('%s completed finally', module.id)
 		})
 	})
 	
@@ -145,13 +171,50 @@ proto.resolveInternal = function (base, path) {
 		var checks = this._hashResolvers
 		do {
 			for (var i = 0, len = checks.length; i < len; i++) {
-				var res = checks[i](hash, base, path)
+				var res = checks[i](base, path, hash)
 				if (res) return res
 			}
 			base = parentDir(base)
 		}
 		while (base !== '/') 
 	}
+}
+
+/**
+ * Determine all the paths that would have resulted in finding this file
+ * TODO: extract this function into a plugin
+ * 
+ * @param  {String} p a complete file path
+ * @return {Array} all paths that would have found this file
+ * @api private
+ */
+
+function pathVariants (p) {
+	var results = [p]
+	// Is it an explicit directory
+	if (p.match(/\/$/)) 
+		results.push(
+			p+'index.js',
+			p+'index'
+		)
+	// Did they end it without an extension
+	else if (!p.match(/\.\w+$/)) results.push(
+		p+'.js', 
+		p+'/index.js'
+	)
+	
+	// Could they of simply named the directory
+	if (p.match(/\/index\.js(?:on)?$/)) 
+		results.push(
+			p.replace(/index\.js(?:on)?$/, ''),
+			p.replace(/\/index\.js(?:on)?$/, '')
+		)
+
+	// Could they of left of the extension
+	if (p.match(/\.js(?:on)?$/)) 
+		results.push(p.replace(/\.js(?:on)?$/, ''))
+
+	return results
 }
 
 /**
@@ -187,7 +250,7 @@ proto.addModule = function (base, path) {
 			return module
 		}
 		else {
-			debug('Ignoring: %s, since it has no module type', file.path)
+			debug('__Ignoring__: %s, since it has no module type', file.path)
 		}
 	}
 }
@@ -233,46 +296,12 @@ function modulize (types, file) {
 }
 
 /**
- * Determine all the paths that would have resulted in finding this file
- * 
- * @param  {String} p a complete file path
- * @return {Array} all paths that would have found this file
- * @api private
- */
-function pathVariants (p) {
-	var results = [p]
-	// Is it an explicit directory
-	if (p.match(/\/$/)) 
-		results.push(
-			p+'index.js',
-			p+'index'
-		)
-	// Did they end it without an extension
-	else if (!p.match(/\.\w+$/)) results.push(
-		p+'.js', 
-		p+'/index.js'
-	)
-	
-	// Could they of simply named the directory
-	if (p.match(/\/index\.js(?:on)?$/)) 
-		results.push(
-			p.replace(/index\.js(?:on)?$/, ''),
-			p.replace(/\/index\.js(?:on)?$/, '')
-		)
-
-	// Could they of left of the extension
-	if (p.match(/\.js(?:on)?$/)) 
-		results.push(p.replace(/\.js(?:on)?$/, ''))
-
-	return results
-}
-
-/**
  * Retrieve the module stored within the sourcegraph
  *
  * @see addModule
  * @return {Module}
  */
+
 proto.get = function (base, path) {
 	return this.data[this.resolveInternal(base, path)]
 }
@@ -283,6 +312,7 @@ proto.get = function (base, path) {
  * @see addModule
  * @return {Boolean}
  */
+
 proto.has = function (base, path) {
 	return this.resolveInternal(base, path) !== undefined
 }

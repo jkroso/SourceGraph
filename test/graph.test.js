@@ -2,7 +2,6 @@ var fs = require('fs')
 , read = fs.readFileSync
 , path = require('path')
 , resolve = path.resolve
-, assert = require('chai').assert
 , should = require('chai').should()
 , Graph = require('../src')
 
@@ -11,16 +10,7 @@ var graph
 // prepare the graph so standart behaviour.
 // Out the gate it doesn't even know how to handle JS
 beforeEach(function () {
-	graph = new Graph
-	require('./types').forEach(function(type){
-		graph.addType(type)
-	})
-	require('./resolvers/filesystem').forEach(function (fn) {
-		graph.addOSResolver(fn)
-	})
-	require('./resolvers/hash').forEach(function (fn) {
-		graph.addHashResolver(fn)
-	})
+	graph = new Graph().use('nodeish', 'component', 'javascript', 'json', 'css')
 })
 
 describe('add(path)', function () {
@@ -78,7 +68,9 @@ describe('resolveInternal(base, name)', function () {
 		var p2 = base+'/node_modules/foo.js' 
 		
 		graph.trace(p1).then(function (files) {
-			graph.resolveInternal(base, 'foo').should.equal(p2)
+			var module = graph.resolveInternal(base, 'foo')
+			should.exist(module)
+			module.should.have.property('path', p2)
 		}).nend(done)
 	})
 })
@@ -88,7 +80,8 @@ it('can define custom handlers', function(done) {
 	graph.addType({
 			if: /\.rndom$/,
 			make: function (file) {
-				require('./types/javascript.js').call(this, file)
+				this.path = file.path
+				this.text = file.text
 				this.requires = function () {
 					return []
 				}
@@ -96,11 +89,10 @@ it('can define custom handlers', function(done) {
 		})
 		.trace(p)
 		.then(function (data) {
-			should.exist(data[p])
-			data[p].text.should.equal(read(p, 'utf-8'))
-			done()
-		})
-		.throw()
+			should.exist(data)
+			data.should.have.property(p)
+				.and.property('text', read(p, 'utf-8'))
+		}).nend(done)
 })
 
 describe('Loading with protocols (e.g. http:)', function () {
@@ -111,151 +103,6 @@ describe('Loading with protocols (e.g. http:)', function () {
 			files.should.have.a.lengthOf(1)
 			files[0].path.should.equal(p)
 			files[0].text.should.include('emitter')
-		}).nend(done)
-	})
-})
-
-describe('npm magic', function () {
-	var base = __dirname + '/fixtures/node'
-
-	it('can include a simple npm package', function(done) {
-		var p = base+'/expandsingle/index.js'
-		var n = base+'/expandsingle/node_modules/foo.js'
-		
-		graph.trace(p).then(function(data) {
-			data.should.have.a.lengthOf(2)
-			data[p].text.should.equal(read(p, 'utf-8'))
-			data[n].text.should.equal(read(n, 'utf-8'))
-		}).nend(done)
-	})
-
-	it('even if it isn\'t relative but has a .js on the end', function (done) {
-		var p = base+'/with_extension/index.js'
-		var n = base+'/with_extension/node_modules/foo.js'
-
-		graph.trace(p).then(function(data) {
-			data.should.have.a.lengthOf(2)
-			data[p].text.should.equal(read(p, 'utf-8'))
-			data[n].text.should.equal(read(n, 'utf-8'))
-		}).nend(done)
-	})
-
-	it('can include a npm package folder from an index.js', function (done) {
-		var p = base+'/expandindex/index.js'
-		var n = base+'/expandindex/node_modules/foo/index.js'
-		
-		graph.trace(p).then(function(data) {
-			data.should.have.a.lengthOf(2)
-			data[p].text.should.equal(read(p, 'utf-8'))
-			data[n].text.should.equal(read(n, 'utf-8'))
-		}).nend(done)
-	})
-
-	it('can add a dependency on a package that is a directory (package.json)', function(done) {
-		var p = base+'/expandpackage/index.js'
-		var n1 = base+'/expandpackage/node_modules/foo/package.json'
-		var n2 = base+'/expandpackage/node_modules/foo/lib/sub.js'
-
-		graph.trace(p).then(function(data) {
-			data.should.have.a.lengthOf(3)
-			data[p].text.should.equal(read(p, 'utf-8'))
-			data[n1].text.should.equal(read(n1, 'utf-8'))
-			data[n2].text.should.equal(read(n2, 'utf-8'))
-		}).nend(done)
-	})
-
-	it('when a dependency has a dependency it gets resolved as well', function(done) {
-		var p = base+'/hassubdependency/index.js'
-		var n1 = base+'/hassubdependency/node_modules/foo/index.js'
-		var n2 = base+'/hassubdependency/node_modules/foo/node_modules/bar/index.js'
-		
-		graph.trace(p).then(function(data) {
-			data.should.have.a.lengthOf(3)
-			data[p].text.should.equal(read(p, 'utf-8'))
-			data[n1].text.should.equal(read(n1, 'utf-8'))
-			data[n2].text.should.equal(read(n2, 'utf-8'))
-		}).nend(done)
-	})
-	
-	it('when deps are mixed', function(done) {
-		var p = base+'/mixed_deps/package.json'
-		var n1 = base+'/mixed_deps/main.js'
-		var n2 = base+'/mixed_deps/node_modules/aaa/index.js'
-		var n3 = base+'/mixed_deps/node_modules/bbb.js'
-		var n4 = base+'/mixed_deps/node_modules/aaa/node_modules/ccc/index.js'
-		
-		graph.trace(p).then(function(data) {
-			data.should.have.a.lengthOf(5)
-			data[p].text.should.equal(read(p, 'utf-8'))
-			data[n1].text.should.equal(read(n1, 'utf-8'))
-			data[n2].text.should.equal(read(n2, 'utf-8'))
-			data[n3].text.should.equal(read(n3, 'utf-8'))
-			data[n4].text.should.equal(read(n4, 'utf-8'))
-		}).nend(done)
-	})
-	
-	it('should resolve core modules with the lowest priority', function (done) {
-		var p = base+'/core/index.js'
-		var n1 = base+'/core/node_modules/path.js'
-		var n2 = resolve(__dirname, '../src/node_modules/events.js')
-		
-		graph.trace(p).then(function(data) {
-			data.should.have.a.lengthOf(3)
-			data[p].text.should.equal(read(p, 'utf-8'))
-			data[n1].text.should.equal(read(n1, 'utf-8'))
-			data[n2].text.should.equal(read(n2, 'utf-8'))
-		}).nend(done)
-	})
-	
-	it('should not include unused dependencies mentioned in package.json')
-})
-
-describe('component/component magic', function () {
-	var root = resolve(__dirname, './fixtures/cc')+'/'
-	
-	it('should handle a simple case where component.json requires one script file', function (done) {
-		var paths = [
-			root+'simple/component.json',
-			root+'simple/index.js'
-		]
-		graph.trace(paths[0]).then(function(data) {
-			data.should.have.a.lengthOf(paths.length)
-			paths.forEach(function (path) {
-				data[path].text.should.equal(read(path, 'utf-8'))
-			})
-			done()
-		})
-	})
-	
-	it('can include another component', function (done) {
-		var paths = [
-			root+'with_dep/component.json',
-			root+'components/component-inherit/component.json',
-			root+'components/component-inherit/index.js'
-		]
-		graph.trace(paths[0]).then(function(data) {
-			data.should.have.a.lengthOf(paths.length+2)
-			paths.forEach(function (path) {
-				data[path].text.should.equal(read(path, 'utf-8'))
-			})
-			var dep = root+'with_dep/components/inherit'
-			data[dep].text.should.equal('module.exports = require("component-inherit")')
-		}).nend(done)
-	})
-	
-	it('can include multiple components', function (done) {
-		var paths = [
-			resolve(__dirname, './fixtures/cc/with_deps/component.json'),
-			resolve(__dirname, './fixtures/cc/components/animal/component.json'),
-			resolve(__dirname, './fixtures/cc/components/animal/index.js'),
-			resolve(__dirname, './fixtures/cc/components/component-inherit/component.json'),
-			resolve(__dirname, './fixtures/cc/components/component-inherit/index.js'),
-		];
-		graph.trace(paths[0]).then(function(data) {
-			data.should.have.a.lengthOf(paths.length+3)
-			paths.forEach(function (path) {
-				data[path].text.should.equal(read(path, 'utf-8'))
-			})
 		}).nend(done)
 	})
 })
@@ -275,27 +122,27 @@ it('Kitchen sink', function (done) {
 			base+'/components/component-jquery/index.js',
 			base+'/components/component-emitter/component.json',
 			base+'/components/component-emitter/index.js',
-		];
+			__dirname+'/node_modules/path.js'
+		]
 
 		graph.addType({
 				if: /\.htempl$/,
 				make: function (file) {
-					require('./types/javascript.js').call(this, file)
+					this.path = file.path
+					this.text = file.text
 					this.requires = function () {
 						return []
 					}
 				}
 			})
 			.trace(paths[0])
+			// Adding the template manualy since nothing actually "require()'s" it
 			.add(paths[2])
 			.then(function(data) {
-				data.should.have.a.lengthOf(paths.length+6)
+				data.should.have.a.lengthOf(paths.length+5)
 				paths.forEach(function (p) {
 					data.should.have.property(p)
-						.and.property('text')
-						.and.equal(read(p, 'utf-8'))
+						.and.property('text', read(p, 'utf-8'))
 				})
-				var n1 = __dirname+'/node_modules/path.js'
-				data[n1].text.should.equal(read(n1, 'utf-8'))
 			}).nend(done)
 })
