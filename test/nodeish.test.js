@@ -3,6 +3,7 @@ var fs = require('fs')
   , path = require('path')
   , resolve = path.resolve
   , should = require('chai').should()
+  , expect = require('chai').expect
   , Graph = require('../src')
 
 var graph
@@ -31,6 +32,16 @@ it('should load the plugin', function () {
 	g._osResolvers.should.have.a.lengthOf(1)
 	g._hashResolvers.should.have.a.lengthOf(1)
 	g._fileTypes.should.have.a.lengthOf(1)
+})
+
+var node = require('../src/plugins/nodeish')
+
+describe('hashSystem', function () {
+	it('should return a full path', function () {
+		expect(node.hashSystem('a', 'foo', {
+			"a/node_modules/foo.js": {}
+		})).to.equal('a/node_modules/foo.js')
+	})
 })
 
 describe('node modules magic', function () {

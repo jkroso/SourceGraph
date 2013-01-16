@@ -116,3 +116,9 @@ Module.prototype.requires = function () {
 
 	return deps
 }
+
+/*!
+ * Expose the variants function for others to use
+ * For example bigfile uses it in its development builds
+ */
+exports.variants = variants

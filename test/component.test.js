@@ -3,6 +3,7 @@ var fs = require('fs')
   , path = require('path')
   , resolve = path.resolve
   , should = require('chai').should()
+  , expect = require('chai').expect
   , Graph = require('../src')
 
 var graph
@@ -35,6 +36,16 @@ it('can load the component plugin', function () {
 	g._osResolvers.should.have.a.lengthOf(1)
 	g._hashResolvers.should.have.a.lengthOf(1)
 	g._fileTypes.should.have.a.lengthOf(2)
+})
+
+var component = require('../src/plugins/component')
+
+describe('hashSystem', function () {
+	it('should return a full path', function () {
+		expect(component.hashSystem('a', 'foo', {
+			"a/components/foo": {}
+		})).to.equal('a/components/foo')
+	})
 })
 
 describe('component/component magic', function () {

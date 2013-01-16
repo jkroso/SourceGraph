@@ -95,7 +95,7 @@ exports.hashSystem = function (dir, name, hash) {
 		return !!hash[p]
 	})[0]
 
-	if (match) return hash[match]
+	if (match) return match
 
 	if (dir === '/' && hash[base+name+'.js'])
 		// Note: we always add ".js" at the end since node won't interpret those as core modules
@@ -126,3 +126,10 @@ Module.prototype.requires = function () {
 	}
 	return deps
 }
+
+/*!
+ * Expose the variants function and base path for others to use
+ * For example bigfile uses them in its development builds
+ */
+exports.variants = variants
+exports.basePath = base

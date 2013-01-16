@@ -70,7 +70,7 @@ describe('resolveInternal(base, name)', function () {
 		graph.trace(p1).then(function (files) {
 			var module = graph.resolveInternal(base, 'foo')
 			should.exist(module)
-			module.should.have.property('path', p2)
+			module.should.equal(p2)
 		}).nend(done)
 	})
 })
