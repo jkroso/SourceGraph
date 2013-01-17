@@ -112,7 +112,7 @@ function getMagic (base, name, resolvers) {
 				promise.resolve(file)
 			}
 			else {
-				debug('unable to resolve % from % base', name, base)
+				debug('unable to resolve %s from %s base', name, base)
 				promise.reject(new Error('unable to resolve '+name+' from '+base))
 			}
 		}
