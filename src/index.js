@@ -197,14 +197,14 @@ proto.resolveInternal = function (base, path) {
 	// Its a component or package name
 	else {
 		var checks = this._hashResolvers
-		do {
+		while (true) {
 			for (var i = 0, len = checks.length; i < len; i++) {
 				var res = checks[i](base, path, hash)
 				if (res) return res
 			}
+			if (base === '/') break
 			base = parentDir(base)
 		}
-		while (base !== '/') 
 	}
 }
 

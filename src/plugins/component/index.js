@@ -104,10 +104,13 @@ Module.prototype.requires = function () {
 	})
 
 	// include all scripts up front
-	data.scripts && data.scripts.forEach(function (path) {
-		if (path[0].match(/\w/)) path = './'+path
-		deps.push(path)
-	})
+	if (data.scripts) {
+		if (!(data.scripts instanceof Array)) throw new Error('Scripts should be an array')
+		data.scripts.forEach(function (path) {
+			if (path[0].match(/\w/)) path = './'+path
+			deps.push(path)
+		})
+	}
 
 	data.styles && data.styles.forEach(function (path) {
 		if (path[0].match(/\w/)) path = './'+path
