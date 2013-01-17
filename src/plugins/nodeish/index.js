@@ -71,9 +71,15 @@ exports.fileSystem = function (dir, name, done) {
 			// In node core modules take priority over custom
 			// This doesn't work when building projects with other systems so instead here 
 			// built in modules take the lowest priority. They probably should in node too but 
-			// they don't so this could cause bugs for some node modules 
+			// they don't so this could cause bugs for some node modules. I've made the call to 
+			// differ here since I believe it will cause less problems than it creates.
 			if (dir === '/' && core[name+'.js']) {
-				readFile(base+name+'.js').end(done)
+				readFile(base+name+'.js').then(function (file) {
+					// Pretend the file came from a global node_modules directory
+					// Which in my opinion is where it should of come from anyway
+					file.path = '/node_modules/'+name+'.js'
+					return file
+				}).end(done)
 			} else {
 				done()
 			}
@@ -97,9 +103,9 @@ exports.hashSystem = function (dir, name, hash) {
 
 	if (match) return match
 
-	if (dir === '/' && hash[base+name+'.js'])
+	if (dir === '/' && hash['/node_modules/'+name+'.js'])
 		// Note: we always add ".js" at the end since node won't interpret those as core modules
-		return base+name+'.js'
+		return '/node_modules/'+name+'.js'
 }
 
 /**

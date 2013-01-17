@@ -16,9 +16,9 @@ var graph
  * @return {Promise} for completion
  */
 
-function trace (files) {
+function trace (files, extra) {
 	return graph.trace(files[0]).then(function(data) {
-		data.should.have.a.lengthOf(files.length)
+		data.should.have.a.lengthOf(files.length + (extra || 0))
 		files.forEach(function (path) {
 			data.should.have.property(path)
 				.and.property('text', read(path, 'utf-8'))
@@ -111,11 +111,24 @@ describe('node modules magic', function () {
 	it('should resolve core modules with the lowest priority', function (done) {
 		var files = [
 			base+'/core/index.js',
-			base+'/core/node_modules/path.js',
-			resolve(__dirname, '../src/plugins/nodeish/modules/events.js')
+			base+'/core/node_modules/path.js'
 		]
 
-		trace(files).nend(done)	
+		trace(files, 1).nend(done)	
+	})
+
+	it('should pretend core node modules located in a global folder', function (done) {
+		var files = [
+			base+'/core/index.js',
+			base+'/core/node_modules/path.js'
+		]
+
+		var eventsPath = resolve(__dirname, '../src/plugins/nodeish/modules/events.js')
+
+		graph.trace(files[0]).then(function(data) {
+			data.should.have.property('/node_modules/events.js')
+				.and.property('text', read(eventsPath, 'utf-8'))
+		}).nend(done)
 	})
 	
 	it('should not include unused dependencies mentioned in package.json')
