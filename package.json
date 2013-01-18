@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "main": "src/index.js",
   "dependencies": {
     "laissez-faire": "0.9.x",
