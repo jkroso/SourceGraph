@@ -1,3 +1,15 @@
+## Todo
+
+- [x] Come up with a decent plugin system
+- [x] Make plugins easy to consume e.g. `.use('node')` 
+- [ ] Improve the level of parrallel loading
+- [ ] Add a watch system with event emitter
+- [x] Store child files on files
+- [x] Store require statements on files
+- [x] Switch plugins to simply be constructors
+- [x] Use a test instance method to figure out if a Module type
+-     matches a file. This method should return a interger score
+- [x] Store parent file information on files
 
 # SourceGraph
 
@@ -67,18 +79,6 @@ Produces:
     (empty array)
 ```
 
-## Todo
-
-- [x] Come up with a decent plugin system
-- [x] Make plugins easy to consume e.g. `.use('node')` 
-- [ ] Improve the level of parrallel loading
-- [ ] Add a watch system with event emitter
-- [ ] Store child files on files
-- [ ] Store require statements on files
-- [ ] Switch plugins to simply be constructors
-- [ ] Use a test instance method to figure out if a Module type
--     matches a file. This method should return a interger score
-- [ ] Store parent file information on files
 
 ## API
 

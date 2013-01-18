@@ -1,5 +1,4 @@
-var Super = require('../../Module')
-  , readFile = require('../../file').readLocal
+var readFile = require('../../file').readLocal
   , join = require('path').join
   , fs = require('fs')
 
@@ -68,22 +67,41 @@ exports.hashSystem = function (dir, name, hash) {
  */
 
 exports.types = [
-	{
-		if: /\/component\.json$/,
-		make: Module
-	},
-	{
-		// Aliased component
-		if: /\/components\/\w+$/,
-		make: require('../javascript').types[0].make
-	}
+	Component,
+	SudoComponent
 ]
 
-function Module (file) {
-	Super.call(this, file)
+var JS = require('../javascript').types[0]
+
+function SudoComponent (file) {
+	this.path = file.path
+	this.text = file.text
 }
 
-Module.prototype.requires = function () {
+SudoComponent.prototype.requires = JS.prototype.requires
+
+SudoComponent.test = function (file) {
+	debugger;
+	if (file.path.match(/\/components\/\w+$/)) {
+		if (file.text.match(/^module\.exports\s*=\s*require\([^\)]+\)$/))
+			return Infinity
+		else
+			return 2
+	}
+}
+
+function Component (file) {
+	this.path = file.path
+	this.text = file.text
+}
+
+Component.test = function (file) {
+	if (file.path.match(/\/component\.json$/)) {
+		return 2
+	}
+}
+
+Component.prototype.requires = function () {
 	var data = JSON.parse(this.text)
 	  , deps = []
 	  , base = this.base

@@ -1,20 +1,20 @@
-var Super = require('../../Module')
-
 exports.types = [
-	{
-		if: /\.hbs$/,
-		make: Module
-	}
+	Handlebars
 ]
 
-function Module (file) {
-	Super.call(this, file)
+function Handlebars (file) {
+	this.path = file.path
+	this.text = file.text
+}
+
+Handlebars.test = function (file) {
+	if (file.path.test(/\.h(?:andlebars|bs)$/)) return 1
 }
 
 /**
  * TODO: make this return a sudo file for the handle-bars runtime
  */
 
-Module.prototype.requires = function () {
+Handlebars.prototype.requires = function () {
 	return ['handlebars-runtime']
 }

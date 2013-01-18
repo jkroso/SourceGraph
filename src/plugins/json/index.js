@@ -1,16 +1,16 @@
-var Super = require('../../Module')
-
 exports.types = [
-	{
-		if: /\.json$/,
-		make: Module
-	}
+	Json
 ]
 
-function Module (file) {
-	Super.call(this, file)
+function Json (file) {
+	this.text = file.text
+	this.path = file.path
 }
 
-Module.prototype.requires = function () {
+Json.test = function (file) {
+	if (file.path.match(/\.json$/)) return 1
+}
+
+Json.prototype.requires = function () {
 	return []
 }

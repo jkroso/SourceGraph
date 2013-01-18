@@ -1,5 +1,4 @@
-var Super = require('../../Module')
-  , detectSeries = require('async').detectSeries
+var detectSeries = require('async').detectSeries
   , readFile = require('../../file').readLocal
   , join = require('path').join
   , fs = require('fs')
@@ -113,17 +112,19 @@ exports.hashSystem = function (dir, name, hash) {
  */
 
 exports.types = [
-	{
-		if: /\/package\.json$/,
-		make: Module
-	}
+	NodePackage
 ]
 
-function Module (file) {
-	Super.call(this, file)
+function NodePackage (file) {
+	this.path = file.path
+	this.text = file.text
 }
 
-Module.prototype.requires = function () {
+NodePackage.test = function (file) {
+	if (file.path.match(/\/package\.json$/)) return 2
+}
+
+NodePackage.prototype.requires = function () {
 	var deps = []
 	var main = JSON.parse(this.text).main
 	if (main != null) {

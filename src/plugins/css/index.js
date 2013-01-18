@@ -1,16 +1,21 @@
-var Super = require('../../Module')
-
 exports.types = [
-	{
-		if: /\.css$/,
-		make: Module
-	}
+	CSS
 ]
 
-function Module (file) {
-	Super.call(this, file)
+function CSS (file) {
+	this.path = file.path
+	this.text = file.text
 }
 
-Module.prototype.requires = function () {
+/**
+ * TODO: do it properly
+ */
+CSS.prototype.requires = function () {
 	return []
+}
+
+CSS.test = function (file) {
+	if (file.path.match(/\.css$/)) {
+		return 1
+	}
 }

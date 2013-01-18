@@ -77,22 +77,33 @@ describe('resolveInternal(base, name)', function () {
 
 it('can define custom handlers', function(done) {
 	var p = __dirname + '/fixtures/non_js/example.rndom'
-	graph.addType({
-			if: /\.rndom$/,
-			make: function (file) {
-				this.path = file.path
-				this.text = file.text
-				this.requires = function () {
-					return []
-				}
-			}
-		})
+	
+	function Rndom (file) {
+		this.text = file.text
+		this.path = file.path
+		this.requires = function () {
+			return []
+		}
+	}
+	Rndom.test = function (file) {
+		if (file.path.match(/\.rndom$/)) return 1
+	}
+	graph.addType(Rndom)
 		.trace(p)
 		.then(function (data) {
 			should.exist(data)
 			data.should.have.property(p)
 				.and.property('text', read(p, 'utf-8'))
 		}).nend(done)
+})
+
+it('should not include files it has not match for', function (done) {
+	var p = __dirname + '/fixtures/non_js/example.rndom'
+	
+	graph.trace(p).then(function (data) {
+		should.exist(data)
+		data.should.have.a.lengthOf(0)
+	}).nend(done)
 })
 
 describe('Loading with protocols (e.g. http:)', function () {
@@ -125,16 +136,18 @@ it('Kitchen sink', function (done) {
 			__dirname+'/node_modules/path.js'
 		]
 
-		graph.addType({
-				if: /\.htempl$/,
-				make: function (file) {
-					this.path = file.path
-					this.text = file.text
-					this.requires = function () {
-						return []
-					}
-				}
-			})
+		function HTempl (file) {
+			this.path = file.path
+			this.text = file.text
+			this.requires = function () {
+				return []
+			}
+		}
+		HTempl.test = function (file) {
+			if (file.path.match(/\.htempl$/)) return 1
+		}
+
+		graph.addType(HTempl)
 			.trace(paths[0])
 			// Adding the template manualy since nothing actually "require()'s" it
 			.add(paths[2])
