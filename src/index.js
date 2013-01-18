@@ -255,6 +255,11 @@ function pathVariants (p) {
  * @param {String} base
  * @param {String} path
  * @return {Promise} for the module that gets inserted
+ *
+ * TODO: consider allowing people to intercept requests for files in case they want
+ * to do some trickery as in the mocha plugin.
+ *
+ * TODO: implement dispatch on protocol. eg http https git ftp ...etc
  */
 
 proto.addModule = function (base, path) {
@@ -316,6 +321,8 @@ proto.insert = function (module) {
  * @param {Array} types
  * @param {Object} file
  * @api private
+ *
+ * TODO: pick the best match not just the first
  */
 
 function modulize (types, file) {

@@ -1,4 +1,4 @@
-var Super = require('../Module')
+var Super = require('../../Module')
   , readFile = require('../../file').readLocal
   , join = require('path').join
   , fs = require('fs')

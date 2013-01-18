@@ -1,4 +1,4 @@
-var Super = require('../Module')
+var Super = require('../../Module')
 
 exports.types = [
 	{
