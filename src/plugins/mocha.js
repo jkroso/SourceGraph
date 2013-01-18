@@ -1,5 +1,5 @@
-var Super = require('../Module')
-  , fs = require('fs')
+var fs = require('fs')
+  , path = require('path')
 
 /*!
  * Note: it would be nice to intercept the request for index.js before its made 
@@ -7,10 +7,7 @@ var Super = require('../Module')
  */
 
 exports.types = [
-	{
-		if: /\/node_modules\/mocha\/index\.js$/,
-		make: Mocha
-	}
+	MochaJS
 ]
 
 /**
@@ -20,12 +17,13 @@ exports.types = [
  * its easier just to cheat in this way.
  */
 
-function Mocha (file) {
-	Super.call(this, file)
+function MochaJS (file) {
 	// Read the build file instead of the index file
 	// Note the path to this module will remain index.js it just
 	// that we switch the contents of that file for that from their
 	// browser build
+	this.path = file.path
+	this.base = path.dirname(file.path)
 	try {
 		this.text = fs.readFileSync(this.base + '/mocha.js', 'utf-8')
 	} catch (e) {
@@ -35,4 +33,10 @@ function Mocha (file) {
 	this.text +='\nmodule.exports = mocha'
 }
 
-Mocha.prototype.__proto__ = Super.prototype
+MochaJS.test = function (file) {
+	if (file.path.match(/\/node_modules\/mocha\/index\.js$/)) return 10
+}
+
+MochaJS.prototype.requires = function () {
+	return []
+}

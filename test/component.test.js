@@ -35,7 +35,7 @@ it('can load the component plugin', function () {
 	g.use('component')
 	g._osResolvers.should.have.a.lengthOf(1)
 	g._hashResolvers.should.have.a.lengthOf(1)
-	g._fileTypes.should.have.a.lengthOf(2)
+	g._types.should.have.a.lengthOf(2)
 })
 
 var component = require('../src/plugins/component')

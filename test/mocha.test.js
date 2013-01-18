@@ -37,7 +37,7 @@ describe('mocha plugin', function () {
 		g.use('mocha')
 		g._osResolvers.should.have.a.lengthOf(0)
 		g._hashResolvers.should.have.a.lengthOf(0)
-		g._fileTypes.should.have.a.lengthOf(1)
+		g._types.should.have.a.lengthOf(1)
 	})
 
 	beforeEach(function () {

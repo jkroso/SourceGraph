@@ -13,7 +13,6 @@ new Graph()
 	.trace(entry)
 	.then(function (files) {
 		files.forEach(function (file) {
-			file.requires = file.requires()
 			file.base = file.base.replace(dirRegex, '')
 			file.path = file.path.replace(dirRegex, '')
 		})

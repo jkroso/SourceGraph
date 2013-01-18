@@ -1,10 +1,12 @@
-var getExt = require('path').extname
+var extname = require('path').extname
   , joinPath = require('path').join
-  , parentDir = require('path').dirname
+  , dirname = require('path').dirname
+  , basename = require('path').basename
   , resolvePath = require('path').resolve
   , getFile = require('./file')
   , Promise = require('laissez-faire')
   , Emitter = require('emitter')
+  , winner = require('winner')
   , all = require('when-all')
   , debug = require('debug')('sourcegraph')
 
@@ -29,7 +31,7 @@ proto.__proto__ = Emitter.prototype
 
 function Graph () {
 	Emitter.call(this)
-	this._fileTypes = []
+	this._types = []
 	this._hashResolvers = []
 	this._osResolvers = []
 	this._pending = []
@@ -66,29 +68,32 @@ proto.addHashResolver = function (fn) {
 }
 
 /**
- * Add a module definition. For example the definition of a javascript module
- * looks a bit like this.
+ * Add a module definition. 
+ * This is simply a constructor but it should have at least two functions associated with it. One is the requires function which should be an instance method that returns an Array of paths to the modules dependencies. The other is a "class method" defined under the property test. This is what is used to determine if this is a suitable type for a file. It will be passed a file object with {path:..., text:...} properties. `test` should return an Interger from 0 to Infinity based on how suitable the given file is for the module type. 0 meaning not suitable at all and Infinity meaning your absolutely certain.
+ * 
+ * Example definition of a Javascript module type:
  *
- *   graph.addType({
- *     if: /\.js$/
- *     make: function JS (file) {
- *       this.path = file.path
- *       this.text = file.text
+ *   function Javascript (file) {
+ *     this.path = file.path     
+ *     this.text = file.text
+ *     this.requires = function () {
+ *       return detective(this.text)
  *     }
- *   })
- *
- * @param {Object} type 
- *   `.if` should be a regex and will be matched again paths
- *   `.make` should be a constructor
+ *   }
+ *   Javascript.test = function (file) {
+ *     var match = file.path.match(/\.js$/)
+ *     return match ? 1 : 0
+ *   }
+ *   graph.addType(Javascript)
+ *  
+ * @param {Function} constructor 
  * @return {Self}
  */
 
 proto.addType = function (type) {
-	if (!(type.if instanceof RegExp))
-		throw new Error('File handler must have a RegExp under its `if` property')
-	if (typeof type.make !== 'function')
-		throw new Error('File handler must have a Function under its `make` property')
-	this._fileTypes.push(type)
+	if (typeof type !== 'function')
+		throw new Error('Expected a function')
+	this._types.push(type)
 	return this
 }
 
@@ -131,14 +136,17 @@ proto.use = function (name) {
 proto.trace = function (entry) {
 	var self = this
 	var promise = this.addModule('/', entry).then(function trace (module) {
-		var deps = module.requires()
+		if (!module) return
+		var deps = module.requires
 		debug('#%d dependencies: %pj', module.id, deps)
 		if (!deps.length) return module
 		
 		// Filter out the files already in the graph
 		deps = deps.filter(function (path) {
 			if (typeof path !== 'string') path = path.path
-			if (self.has(module.base, path)) {
+			var existing = self.get(module.base, path)
+			if (existing) {
+				relate(existing)
 				debug('#%d\'s dependency %s already exists', module.id, path)
 			} else {
 				return true
@@ -148,8 +156,14 @@ proto.trace = function (entry) {
 
 		deps = deps.map(function (path) {
 			debug('#%d fetching: %s from %s', module.id, path, module.base)
-			return self.addModule(module.base, path)
+			return self.addModule(module.base, path).end(relate)
 		})
+
+		function relate (child) {
+			if (!child) return
+			child.parents.push(module.path)
+			module.children.push(child.path)
+		}
 
 		return all(deps).then(function (modules) {
 			return all(modules.filter(Boolean).map(trace))
@@ -202,46 +216,9 @@ proto.resolveInternal = function (base, path) {
 				if (res) return res
 			}
 			if (base === '/') break
-			base = parentDir(base)
+			base = dirname(base)
 		}
 	}
-}
-
-/**
- * Determine all the paths that would have resulted in finding this file
- * TODO: extract this function into a plugin
- * 
- * @param  {String} p a complete file path
- * @return {Array} all paths that would have found this file
- * @api private
- */
-
-function pathVariants (p) {
-	var results = [p]
-	// Is it an explicit directory
-	if (p.match(/\/$/)) 
-		results.push(
-			p+'index.js',
-			p+'index'
-		)
-	// Did they end it without an extension
-	else if (!p.match(/\.\w+$/)) results.push(
-		p+'.js', 
-		p+'/index.js'
-	)
-	
-	// Could they of simply named the directory
-	if (p.match(/\/index\.js(?:on)?$/)) 
-		results.push(
-			p.replace(/index\.js(?:on)?$/, ''),
-			p.replace(/\/index\.js(?:on)?$/, '')
-		)
-
-	// Could they of left of the extension
-	if (p.match(/\.js(?:on)?$/)) 
-		results.push(p.replace(/\.js(?:on)?$/, ''))
-
-	return results
 }
 
 /**
@@ -254,9 +231,6 @@ function pathVariants (p) {
  * @param {String} base
  * @param {String} path
  * @return {Promise} for the module that gets inserted
- *
- * TODO: consider allowing people to intercept requests for files in case they want
- * to do some trickery as in the mocha plugin.
  *
  * TODO: implement dispatch on protocol. eg http https git ftp ...etc
  */
@@ -276,7 +250,7 @@ proto.addModule = function (base, path) {
 
 	function add (file) {
 		debug('Received: %s', file.path)
-		var module = modulize(self._fileTypes, file)
+		var module = modulize(self._types, file)
 		if (module) {
 			self.insert(module)
 			return module
@@ -320,15 +294,25 @@ proto.insert = function (module) {
  * @param {Array} types
  * @param {Object} file
  * @api private
- *
- * TODO: pick the best match not just the first
  */
 
 function modulize (types, file) {
-	for ( var i = 0, len = types.length; i < len; i++ ) {
-		if (types[i].if.test(file.path)) 
-			return new types[i].make(file)
-	}
+	var Type = winner(types, function (type) {
+		return type.test(file) || 0
+	}, 1)
+	if (!Type) return
+	var module = new Type(file)
+	var name = module.path
+	module.parents = []
+	module.children = []
+	module.base = dirname(name)
+	module.ext = extname(name)
+	module.name = basename(name, module.ext)
+	// Remove the dot
+	module.ext = module.ext.replace(/^\./, '')
+	module.lastModified = file['last-modified'] || Date.now()
+	module.requires = module.requires()
+	return module
 }
 
 /**
@@ -351,4 +335,41 @@ proto.get = function (base, path) {
 
 proto.has = function (base, path) {
 	return this.resolveInternal(base, path) !== undefined
+}
+
+/**
+ * Determine all the paths that would have resulted in finding this file
+ * TODO: extract this function into a plugin
+ * 
+ * @param  {String} p a complete file path
+ * @return {Array} all paths that would have found this file
+ * @api private
+ */
+
+function pathVariants (p) {
+	var results = [p]
+	// Is it an explicit directory
+	if (p.match(/\/$/)) 
+		results.push(
+			p+'index.js',
+			p+'index'
+		)
+	// Did they end it without an extension
+	else if (!p.match(/\.\w+$/)) results.push(
+		p+'.js', 
+		p+'/index.js'
+	)
+	
+	// Could they of simply named the directory
+	if (p.match(/\/index\.js(?:on)?$/)) 
+		results.push(
+			p.replace(/index\.js(?:on)?$/, ''),
+			p.replace(/\/index\.js(?:on)?$/, '')
+		)
+
+	// Could they of left of the extension
+	if (p.match(/\.js(?:on)?$/)) 
+		results.push(p.replace(/\.js(?:on)?$/, ''))
+
+	return results
 }
