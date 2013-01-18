@@ -48,7 +48,6 @@ function Graph () {
 
 proto.addOSResolver = function (fn) {
 	this._osResolvers.push(fn)
-	this.getFile = getFile(this._osResolvers)
 	return this
 }
 

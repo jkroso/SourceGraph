@@ -1,20 +1,17 @@
+
 # SourceGraph
 
-Most module systems depend on producers hard wiring names to the modules they write. A tool such a npm or component/component will then provide some magic so consumers can import this module simply by requiring it by the name the producer gave it. I believe this model of packaging code is over complicated and requires commitment from users. This makes code sharing difficult in the long run. This tool is a small piece of my solution to this problem. Its job is to hunt down dependencies and create file objects representing them.
-
-Out of the box it will handle the semantics of node and component/component tools along with what I believe is a much better way to require a dependency, a url or a path.
+SourceGraph is a tool to help resolve your projects dependencies. It plays the role of a framework by providing the machinery that is common to all dependency resolving systems. You just need to to it how to figure out what one file in your language of choice depends on and it will run with it and come back with a full array of the files depended on by your project. It isn't limited to just one language at a time though. You can teach it about as languages as you like an it will pull them all together no problem. For example Javascript and coffeescript are often used together but require a compilate step so the process is a bit clunky. Sourcegraph doesn't care about the language so long as you have provided it with a function to call for each. When combined with a compilation tool you have a complete build solution which is completly felxible. You will be able to mix and match languages, always able to pick the best tool for the job.
 
 ## Installation
 
-`npm install sourcegraph`
-
-npm doesn't currently do a very good job of handling github dependencies so you make have to install those individually with explicit commands for each.
+`$ npm install sourcegraph -g`
 
 ## Example
 
-See the example folder
+  $ sourcegraph example/simple/simple.js -b
 
-Its output should look something like this on your machine:
+Produces:
 
 ```
 - 
@@ -69,6 +66,19 @@ Its output should look something like this on your machine:
   requires: 
     (empty array)
 ```
+
+## Todo
+
+- [x] Come up with a decent plugin system
+- [x] Make plugins easy to consume e.g. `.use('node')` 
+- [ ] Improve the level of parrallel loading
+- [ ] Add a watch system with event emitter
+- [ ] Store child files on files
+- [ ] Store require statements on files
+- [ ] Switch plugins to simply be constructors
+- [ ] Use a test instance method to figure out if a Module type
+-     matches a file. This method should return a interger score
+- [ ] Store parent file information on files
 
 ## API
 
@@ -151,12 +161,6 @@ graph.add('/current/working/directory', '../super-module')
 ### proto.has()
 
   Is the file already listed in the sourcegraph
-## Todo
-
-- [x] Come up with a decent plugin system
-- [x] Make plugins easy to consume e.g. `.use('node')` 
-- [ ] Improve the level of parrallel loading
-- [ ] Consider adding a watch system
 
 ## Release History
 
