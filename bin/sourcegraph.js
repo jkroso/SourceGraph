@@ -70,9 +70,6 @@ if (!program.plugins) {
 
 graph.then(
 	function (files) {
-		// slice to remove path mapping and just send as an index
-		files = files.slice()
-		
 		if (program.listFiles) {
 			process.stdout.write(
 				renderJSON(
