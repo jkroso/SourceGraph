@@ -1,74 +1,32 @@
+
 # SourceGraph
 
-Most module systems depend on producers hard wiring names to the modules they write. A tool such a npm or component/component will then provide some magic so consumers can import this module simply by requiring it by the name the producer gave it. I believe this model of packaging code is over complicated and requires commitment from users. This makes code sharing difficult in the long run. This tool is a small piece of my solution to this problem. Its job is to hunt down dependencies and create file objects representing them.
-
-Out of the box it will handle the semantics of node and component/component tools along with what I believe is a much better way to require a dependency, a url or a path.
+SourceGraph is a tool to help resolve your projects dependencies. It plays the role of a framework by providing the machinery that is common to all dependency resolving systems. You just need to to it how to figure out what one file in your language of choice depends on and it will run with it and come back with a full array of the files depended on by your project. It isn't limited to just one language at a time though. You can teach it about as languages as you like an it will pull them all together no problem. For example Javascript and coffeescript are often used together but require a compilate step so the process is a bit clunky. Sourcegraph doesn't care about the language so long as you have provided it with a function to call for each. When combined with a compilation tool you have a complete build solution which is completly felxible. You will be able to mix and match languages, always able to pick the best tool for the job.
 
 ## Installation
 
-`npm install sourcegraph`
-
-npm doesn't currently do a very good job of handling github dependencies so you make have to install those individually with explicit commands for each.
+    $ npm install sourcegraph -g
 
 ## Example
 
-See the example folder
+    $ sourcegraph example/simple/simple.js -b
 
-Its output should look something like this on your machine:
+Produces an Array of module object looking a bit like this:
 
-```
-- 
-  path:         /husband.js
-  base:         
-  ext:          js
-  name:         husband
-  text:         require('./wife')
-  lastModified: 1358066519000
-  id:           1
-  requires: 
-    - ./wife
-- 
-  path:         /wife.js
-  base:         
-  ext:          js
-  name:         wife
-  text:         require('./children')
-  lastModified: 1358066575000
-  id:           2
-  requires: 
-    - ./children
-- 
-  path:         /children/index.js
-  base:         /children
-  ext:          js
-  name:         index
-  text:         require('./tracy');require('./bow')
-  lastModified: 1358068413000
-  id:           3
-  requires: 
-    - ./tracy
-    - ./bow
-- 
-  path:         /children/tracy.js
-  base:         /children
-  ext:          js
-  name:         tracy
-  text:         module.exports = 'mess'
-  lastModified: 1358066646000
-  id:           4
-  requires: 
-    (empty array)
-- 
-  path:         /children/bow.js
-  base:         /children
-  ext:          js
-  name:         bow
-  text:         module.exports = 'mess'
-  lastModified: 1358066675000
-  id:           5
-  requires: 
-    (empty array)
-```
+    - 
+      path:         /wife.js
+      text:         require('./children')
+      parents: 
+        - /husband.js
+      children: 
+        - /children/index.js
+      base:         
+      ext:          js
+      name:         wife
+      lastModified: 1358066575000
+      requires: 
+        - ./children
+      id:           2
 
 ## API
 

@@ -1,15 +1,3 @@
-## Todo
-
-- [x] Come up with a decent plugin system
-- [x] Make plugins easy to consume e.g. `.use('node')` 
-- [ ] Improve the level of parrallel loading
-- [ ] Add a watch system with event emitter
-- [x] Store child files on files
-- [x] Store require statements on files
-- [x] Switch plugins to simply be constructors
-- [x] Use a test instance method to figure out if a Module type
--     matches a file. This method should return a interger score
-- [x] Store parent file information on files
 
 # SourceGraph
 
@@ -17,68 +5,28 @@ SourceGraph is a tool to help resolve your projects dependencies. It plays the r
 
 ## Installation
 
-`$ npm install sourcegraph -g`
+    $ npm install sourcegraph -g
 
 ## Example
 
-  $ sourcegraph example/simple/simple.js -b
+    $ sourcegraph example/simple/simple.js -b
 
-Produces:
+Produces an Array of module object looking a bit like this:
 
-```
-- 
-  path:         /husband.js
-  base:         
-  ext:          js
-  name:         husband
-  text:         require('./wife')
-  lastModified: 1358066519000
-  id:           1
-  requires: 
-    - ./wife
-- 
-  path:         /wife.js
-  base:         
-  ext:          js
-  name:         wife
-  text:         require('./children')
-  lastModified: 1358066575000
-  id:           2
-  requires: 
-    - ./children
-- 
-  path:         /children/index.js
-  base:         /children
-  ext:          js
-  name:         index
-  text:         require('./tracy');require('./bow')
-  lastModified: 1358068413000
-  id:           3
-  requires: 
-    - ./tracy
-    - ./bow
-- 
-  path:         /children/tracy.js
-  base:         /children
-  ext:          js
-  name:         tracy
-  text:         module.exports = 'mess'
-  lastModified: 1358066646000
-  id:           4
-  requires: 
-    (empty array)
-- 
-  path:         /children/bow.js
-  base:         /children
-  ext:          js
-  name:         bow
-  text:         module.exports = 'mess'
-  lastModified: 1358066675000
-  id:           5
-  requires: 
-    (empty array)
-```
-
+    - 
+      path:         /wife.js
+      text:         require('./children')
+      parents: 
+        - /husband.js
+      children: 
+        - /children/index.js
+      base:         
+      ext:          js
+      name:         wife
+      lastModified: 1358066575000
+      requires: 
+        - ./children
+      id:           2
 
 ## API
 
@@ -86,7 +34,7 @@ Produces:
 var Graph = require('sourcegraph')
 ```
   - [Graph()](#graph)
-  - [proto.addType()](#protoaddtypetypeobject)
+  - [proto.addType()](#protoaddtypeconstructorfunction)
   - [proto.use()](#protousenamestring)
   - [proto.trace()](#prototraceentrystring)
   - [proto.then()](#protothencallbackfunctionfailfunction)
@@ -109,19 +57,26 @@ new Graph().trace('/path/to/my/project').then(function(files){
 })
 ```
 
-### proto.addType(type:Object)
+### proto.addType(constructor:Function)
 
-  Add a module definition. For example the definition of a javascript module
-  looks a bit like this.
+  Add a module definition. 
+  This is simply a constructor but it should have at least two functions associated with it. One is the requires function which should be an instance method that returns an Array of paths to the modules dependencies. The other is a "class method" defined under the property test. This is what is used to determine if this is a suitable type for a file. It will be passed a file object with {path:..., text:...} properties. `test` should return an Interger from 0 to Infinity based on how suitable the given file is for the module type. 0 meaning not suitable at all and Infinity meaning your absolutely certain.
+  
+  Example definition of a Javascript module type:
   
 ```js
-graph.addType({
-  if: /\.js$/
-  make: function JS (file) {
-    this.path = file.path
-    this.text = file.text
+function Javascript (file) {
+  this.path = file.path     
+  this.text = file.text
+  this.requires = function () {
+    return detective(this.text)
   }
-})
+}
+Javascript.test = function (file) {
+  var match = file.path.match(/\.js$/)
+  return match ? 1 : 0
+}
+graph.addType(Javascript)
 ```
 
 ### proto.use(name:String...)

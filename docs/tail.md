@@ -1,9 +1,3 @@
-## Todo
-
-- [x] Come up with a decent plugin system
-- [x] Make plugins easy to consume e.g. `.use('node')` 
-- [ ] Improve the level of parrallel loading
-- [ ] Consider adding a watch system
 
 ## Release History
 

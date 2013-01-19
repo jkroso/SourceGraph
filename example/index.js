@@ -15,6 +15,12 @@ new Graph()
 		files.forEach(function (file) {
 			file.base = file.base.replace(dirRegex, '')
 			file.path = file.path.replace(dirRegex, '')
+			file.children = file.children.map(function (path) {
+				return path.replace(dirRegex, '')
+			})
+			file.parents = file.parents.map(function (path) {
+				return path.replace(dirRegex, '')
+			})
 		})
 		console.log(prettyjson(files))
 	})
