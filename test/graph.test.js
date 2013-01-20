@@ -51,27 +51,34 @@ describe('trace(path)', function () {
 })
 
 describe('resolveInternal(base, name)', function () {
-	it('should resolve a relative path', function (done) {
+	it('should resolve a relative path', function () {
 		var base = __dirname + '/fixtures/simple'
 		var p1 = base+'/index.js'
 		var p2 = base+'/has_dependency.js'
+		graph.data[p1] = {}
+		graph.data[p2] = {}
 
-		graph.trace(p2).then(function (files) {
-			graph.resolveInternal(base, './index').should.equal(p1)
-			graph.resolveInternal(base, './has_dependency.js').should.equal(p2)
-		}).nend(done)
+		graph.resolveInternal(base, './index').should.equal(p1)
+		graph.resolveInternal(base, './has_dependency.js').should.equal(p2)
 	})
 
-	it('should resolve a magic path', function (done) {
+	it('should resolve a magic path', function () {
 		var base = __dirname+'/fixtures/node/expandsingle'
-		var p1 = base+'/index.js' 
 		var p2 = base+'/node_modules/foo.js' 
-		
-		graph.trace(p1).then(function (files) {
-			var module = graph.resolveInternal(base, 'foo')
-			should.exist(module)
-			module.should.equal(p2)
-		}).nend(done)
+		graph.data[p2] = {}
+
+		var path = graph.resolveInternal(base, 'foo')
+		should.exist(path)
+		path.should.equal(p2)
+	})
+
+	it('should resolve a remote path', function () {
+		graph.data = {
+			'http://google.com/a/b/c': {}
+		}
+		var path = graph.resolveInternal('http://google.com/a/b', './c')
+		should.exist(path)
+		path.should.equal('http://google.com/a/b/c')
 	})
 })
 

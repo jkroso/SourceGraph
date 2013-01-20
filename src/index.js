@@ -2,12 +2,14 @@ var extname = require('path').extname
   , joinPath = require('path').join
   , dirname = require('path').dirname
   , basename = require('path').basename
-  , resolvePath = require('path').resolve
+  , url = require('url')
   , getFile = require('./file')
   , Promise = require('laissez-faire')
   , Emitter = require('emitter')
   , winner = require('winner')
   , all = require('when-all')
+  , unique = require('unique')
+  , find = require('find')
   , debug = require('debug')('sourcegraph')
 
 exports = module.exports = Graph
@@ -164,10 +166,11 @@ proto.trace = function (entry) {
 			child.parents.push(module.path)
 			module.children.push(child.path)
 		}
-
-		return all(deps).then(function (modules) {
-			return all(modules.filter(Boolean).map(trace))
-		})
+		
+		// return a promise for when all dependencies have been traced
+		return all(deps.map(function (promise) {
+			return promise.then(trace)
+		}))
 	})
 	
 	this._pending.push(promise)
@@ -199,13 +202,19 @@ proto.resolveInternal = function (base, path) {
 	if (!path) throw new Error('No path provided in a require from '+base)
 	var hash = this.data
 	// Is it a proper path
-	if (path.match(/^\/|\.|[a-zA-Z]+:/)) {
-		path = resolvePath(base, path)
-		var paths = pathVariants(path)
-		  , i = paths.length
-		while (i--) {
-			if (paths[i] in hash) return paths[i]
+	if (path.match(/^(?:\/|\.)/)) {
+		if (base[0] === '/') {
+			path = joinPath(base, path)
+		} else {
+			path = url.resolve(base+'/', path)
 		}
+		return find(pathVariants(path), function (path) {
+			return path in hash
+		})
+	}
+	// Or a protocol
+	else if (path.match(/^[a-zA-Z]+:/)) {
+		if (path in hash) return path
 	}
 	// Its a component or package name
 	else {
@@ -250,14 +259,16 @@ proto.addModule = function (base, path) {
 
 	function add (file) {
 		debug('Received: %s', file.path)
+		if (self.data[file.path]) {
+			debug('A file like it has been added while in flight though so it will not be added again')
+			return
+		}
 		var module = modulize(self._types, file)
 		if (module) {
 			self.insert(module)
 			return module
 		}
-		else {
-			debug('__Ignoring__: %s, since it has no module type', file.path)
-		}
+		debug('__Ignoring__: %s, since it has no module type', file.path)
 	}
 }
 
@@ -311,7 +322,7 @@ function modulize (types, file) {
 	// Remove the dot
 	module.ext = module.ext.replace(/^\./, '')
 	module.lastModified = file['last-modified'] || Date.now()
-	module.requires = module.requires()
+	module.requires = unique(module.requires())
 	return module
 }
 

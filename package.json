@@ -16,7 +16,9 @@
     "winner": "~0.3.0",
     "detective": "~0.2.1",
     "colors": "~0.6.0-1",
-    "prettyjson": "~0.7.1"
+    "prettyjson": "~0.7.1",
+    "unique": "https://github.com/jkroso/unique/tarball/master",
+    "find": "https://github.com/jkroso/find/tarball/patch-1"
   },
   "devDependencies": {
     "mocha": "",

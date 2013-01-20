@@ -26,14 +26,6 @@ function trace (files, extra) {
 	})
 }
 
-it('should load the plugin', function () {
-	var g = new Graph
-	g.use('nodeish')
-	g._osResolvers.should.have.a.lengthOf(1)
-	g._hashResolvers.should.have.a.lengthOf(1)
-	g._types.should.have.a.lengthOf(1)
-})
-
 var node = require('../src/plugins/nodeish')
 
 describe('hashSystem', function () {
@@ -45,6 +37,13 @@ describe('hashSystem', function () {
 })
 
 describe('node modules magic', function () {
+	it('should load the plugin', function () {
+		var g = new Graph
+		g.use('nodeish')
+		g._osResolvers.should.have.a.lengthOf(1)
+		g._hashResolvers.should.have.a.lengthOf(1)
+		g._types.should.have.a.lengthOf(1)
+	})
 
 	beforeEach(function () {
 		graph = new Graph
@@ -117,7 +116,7 @@ describe('node modules magic', function () {
 		trace(files, 1).nend(done)	
 	})
 
-	it('should pretend core node modules located in a global folder', function (done) {
+	it('should pretend core node modules are located in a global folder', function (done) {
 		var files = [
 			base+'/core/index.js',
 			base+'/core/node_modules/path.js'
@@ -129,6 +128,17 @@ describe('node modules magic', function () {
 			data.should.have.property('/node_modules/events.js')
 				.and.property('text', read(eventsPath, 'utf-8'))
 		}).nend(done)
+	})
+
+	it('should prevent duplicate dependencies being output', function (done) {
+		var dir = base + '/concurrent-requires/'
+		var files = [
+			dir+'index.js',
+			dir+'pair-a.js',
+			dir+'pair-b.js',
+			dir+'pair-c.js'
+		]
+		trace(files).nend(done)
 	})
 	
 	it('should not include unused dependencies mentioned in package.json')
