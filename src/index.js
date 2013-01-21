@@ -1,13 +1,13 @@
-var extname = require('path').extname
-  , joinPath = require('path').join
-  , dirname = require('path').dirname
-  , basename = require('path').basename
+var path = require('path')
+  , dirname = path.dirname
+  , pathJoin = path.join
   , url = require('url')
-  , getFile = require('./file')
+  , file = require('./file')
   , Promise = require('laissez-faire')
   , Emitter = require('emitter')
   , winner = require('winner')
   , all = require('when-all')
+  , first = require('when-first').seq
   , unique = require('unique')
   , find = require('find')
   , debug = require('debug')('sourcegraph')
@@ -38,7 +38,6 @@ function Graph () {
 	this._osResolvers = []
 	this._pending = []
 	this.data = []
-	this.getFile = getFile(this._osResolvers)
 }
 
 /**
@@ -129,6 +128,60 @@ proto.use = function (name) {
 }
 
 /**
+ * Retrive a file object
+ *
+ * @param {String} base the directory wher the file is being required from
+ * @param {String} name the name of the module being required
+ * @return {Promise} for a file object
+ * @api private
+ */
+
+proto.getFile = function (base, name) {
+	var paths = this.completions(name)
+	
+	if (isMagic(name)) {
+		// Note: if the base is remote this won't work
+		return first(paths.map(function (path) {
+			return file.magic(base, path, this._osResolvers)
+		}, this))
+	} 
+	
+	if (isProtocol(name)) {
+		return first(paths.map(function(path){
+			return file.remote(path)
+		}))
+	}
+	
+	if (isAbsolute(name)) {
+		return first(paths.map(function(path){
+			return file.local(path)
+		}))
+	}
+	
+	if (isProtocol(base)) {
+		return first(paths.map(function(path){
+			return file.remote(url.resolve(base, path))
+		}))
+	}
+
+	return first(paths.map(function(path){
+		return file.local(pathJoin(base, path))
+	}))
+}
+
+function isAbsolute (p) {
+	return !!p.match(/^\//)
+}
+
+function isMagic (p) {
+	return p.match(/^\w/) && !isProtocol(p)
+}
+
+function isProtocol (p) {
+	return !!p.match(/^[a-zA-Z]+:/)
+}
+
+/**
  * Recursive version of `proto.add`
  * 
  * @param  {String} entry, a path to a file
@@ -204,11 +257,11 @@ proto.resolveInternal = function (base, path) {
 	// Is it a proper path
 	if (path.match(/^(?:\/|\.)/)) {
 		if (base[0] === '/') {
-			path = joinPath(base, path)
+			path = pathJoin(base, path)
 		} else {
 			path = url.resolve(base+'/', path)
 		}
-		return find(pathVariants(path), function (path) {
+		return find(this.completions(path), function (path) {
 			return path in hash
 		})
 	}
@@ -317,8 +370,8 @@ function modulize (types, file) {
 	module.parents = []
 	module.children = []
 	module.base = dirname(name)
-	module.ext = extname(name)
-	module.name = basename(name, module.ext)
+	module.ext = path.extname(name)
+	module.name = path.basename(name, module.ext)
 	// Remove the dot
 	module.ext = module.ext.replace(/^\./, '')
 	module.lastModified = file['last-modified'] || Date.now()
@@ -349,38 +402,23 @@ proto.has = function (base, path) {
 }
 
 /**
- * Determine all the paths that would have resulted in finding this file
- * TODO: extract this function into a plugin
+ * Create a list of possible inferred files names
+ *
+ *   completions('path', types) // => ['path.js', 'path/index.js']
  * 
- * @param  {String} p a complete file path
- * @return {Array} all paths that would have found this file
+ * @param  {String} path
+ * @return {Array}
  * @api private
  */
 
-function pathVariants (p) {
-	var results = [p]
-	// Is it an explicit directory
-	if (p.match(/\/$/)) 
-		results.push(
-			p+'index.js',
-			p+'index'
-		)
-	// Did they end it without an extension
-	else if (!p.match(/\.\w+$/)) results.push(
-		p+'.js', 
-		p+'/index.js'
-	)
-	
-	// Could they of simply named the directory
-	if (p.match(/\/index\.js(?:on)?$/)) 
-		results.push(
-			p.replace(/index\.js(?:on)?$/, ''),
-			p.replace(/\/index\.js(?:on)?$/, '')
-		)
-
-	// Could they of left of the extension
-	if (p.match(/\.js(?:on)?$/)) 
-		results.push(p.replace(/\.js(?:on)?$/, ''))
-
-	return results
+proto.completions = function (path) {
+	var types = this._types
+	var result = [path]
+	for (var i = 0, len = types.length; i < len; i++) {
+		var Type = types[i]
+		if (Type.completions) {
+			result = result.concat(Type.completions(path))
+		}
+	}
+	return result
 }

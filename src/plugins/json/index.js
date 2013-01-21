@@ -14,3 +14,31 @@ Json.test = function (file) {
 Json.prototype.requires = function () {
 	return []
 }
+
+/**
+ * Determine all the paths that would have resulted in finding this file
+ * 
+ * @param {String} path
+ * @return {Array}
+ */
+
+Json.completions = function (path) {
+	var results = []
+	
+	// Is it an explicit directory
+	if (path.match(/\/$/)) {
+		results.push(path+'index.json')
+	}
+	// Did they end it without an extension
+	else if (!path.match(/\.json$/)) {
+		results.push(
+			path+'.json',
+			path+'/index.json'
+		)
+	}
+	else {
+		results.push(path)
+	}
+
+	return results
+}

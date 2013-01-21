@@ -1,5 +1,5 @@
 var detectSeries = require('async').detectSeries
-  , readFile = require('../../file').readLocal
+  , readFile = require('../../file').local
   , join = require('path').join
   , fs = require('fs')
 

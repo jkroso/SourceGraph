@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "main": "src/index.js",
   "dependencies": {
     "laissez-faire": "0.9.x",
@@ -17,6 +17,7 @@
     "detective": "~0.2.1",
     "colors": "~0.6.0-1",
     "prettyjson": "~0.7.1",
+    "when-first": "https://github.com/jkroso/when-first/tarball/master",
     "unique": "https://github.com/jkroso/unique/tarball/master",
     "find": "https://github.com/jkroso/find/tarball/patch-1"
   },
@@ -28,7 +29,6 @@
   "bundledDependencies": [
     "winner",
     "when-all",
-    "when-first",
     "emitter",
     "async-loop",
     "async-forEach"

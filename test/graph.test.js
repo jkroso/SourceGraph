@@ -4,6 +4,8 @@ var fs = require('fs')
 , resolve = path.resolve
 , should = require('chai').should()
 , Graph = require('../src')
+, all = require('when-all')
+, file = require('../src/file')
 
 var graph
 
@@ -33,6 +35,76 @@ describe('add(path)', function () {
 			files[p2].text.should.equal(read(p2, 'utf-8'))
 			done()
 		})
+	})
+})
+
+describe('getFile(base, path)', function (get) {
+	var jquery = 'http://code.jquery.com/jquery-1.8.0.js'
+	var localjq = __dirname+'/fixtures/jquery-1.8.0.js'
+	var jqHost = jquery.replace(/\/[^\/]*$/, '')
+	var cachJQ = file.remote(jquery)
+
+	it('should fetch a local file', function (done) {
+		var base = __dirname + '/fixtures/simple'
+		graph.getFile(base, './index.js').then(function (file) {
+			file.path.should.equal(base+'/index.js')
+		}).nend(done)
+	})
+
+	it('should fetch an absolute url from a remote base', function (done) {
+		graph.getFile(jqHost, jquery).then(function (file) {
+			file.path.should.equal(jquery)
+		}).nend(done)
+	})
+	
+	it('should fetch a relative path from a url base', function (done) {
+		all([
+			graph.getFile(jqHost, './jquery-1.8.0.js'),
+			cachJQ
+		]).then(function (files) {
+			files[0].should.deep.equal(files[1])
+		}).nend(done)
+	})
+
+	it('should fetch a remote url from a local base', function (done) {
+		graph.getFile('/', jquery).then(function (resolved) {
+			return cachJQ.then(function (file) {
+				file.should.deep.equal(resolved)
+			})
+		}).nend(done)
+	})
+
+	it('should fetch an absolute local path from a url base', function (done) {
+		graph.getFile(jqHost, __dirname+'/node_modules/package').then(function (resolved) {
+			return file.local(__dirname+'/node_modules/package/index.js').then(function (file) {
+				file.should.deep.equal(resolved)
+			})
+		}).nend(done)
+	})
+	
+	it('should resolve a node package from a local base', function (done) {
+		graph.getFile(__dirname, 'file.js').then(function (resolved) {
+			return file.local(__dirname+'/node_modules/file.js').then(function (file) {
+				file.should.deep.equal(resolved)
+			})
+		}).nend(done)
+	})
+
+	it('should resolve a component from a local path', function (done) {
+		graph.getFile(__dirname, 'jkroso-path').then(function (resolved) {
+			return file.local(__dirname+'/components/jkroso-path/component.json').then(function (file) {
+				file.should.deep.equal(resolved)
+			})
+		}).nend(done)
+	})
+	// I've slowed index down by making it massive. Perhaps there is a better way
+	// I am trying to ensure getFile isn't subject to any kind of race.
+	it('should respect module priority', function (done) {
+		var base = __dirname + '/fixtures/simple'
+		graph.getFile(base, './index').then(function (file) {
+			file.should.have.property('path', base+'/index')
+			file.should.have.property('text', fs.readFileSync(base+'/index', 'utf-8'))
+		}).nend(done)
 	})
 })
 
@@ -76,6 +148,7 @@ describe('resolveInternal(base, name)', function () {
 		graph.data = {
 			'http://google.com/a/b/c': {}
 		}
+		debugger;
 		var path = graph.resolveInternal('http://google.com/a/b', './c')
 		should.exist(path)
 		path.should.equal('http://google.com/a/b/c')

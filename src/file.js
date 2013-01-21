@@ -1,74 +1,10 @@
 var fs = require('fs')
   , dirname = require('path').dirname
-  , resolvePath = require('path').resolve
   , Promise = require('laissez-faire')
   , request = require('superagent')
-  , first = require('when-first')
   , doUntil = require('async-loop').doUntil
   , series = require('async-forEach').series
-  , resolveURL = require('url').resolve
   , debug = require('debug')('getfile')
-
-/**
- * Fetch a file from any type of path
- *
- * @param {String} base, current directory
- * @param {String} path, [url, file path, or module path]
- * @param {Array} resolvers, containing functions
- * @return {Promise} for a file object
- */
-
-exports = module.exports = function (resolvers) {
-	return function dispatch (base, path) {
-		if (isMagic(path)) {
-			// Note: if the base is remote this won't work
-			return getMagic(base, path, resolvers)
-		} 
-		else if (isProtocol(base)) {
-			if (isProtocol(path) || !isAbsolute(path))
-				return getRemote(resolveURL(base, path))
-			else
-				return getFile(path)
-		}
-		else {
-			if (isProtocol(path)) {
-				return getRemote(path)
-			} else {
-				return getFile(resolvePath(base, path))
-			}
-		}
-	}
-}
-
-/**
- * Example:
- *   /path/to/file // => true
- *   ./path/to/file // => false
- */
-
-function isAbsolute (p) {
-	return !!p.match(/^\//)
-}
-
-/**
- * Example:
- *   jess // => true
- *   ./jess // => false
- */
-
-function isMagic (p) {
-	return p.match(/^\w/) && !isProtocol(p)
-}
-
-/**
- * Example:
- *   http://google.com // => true
- *   /local/path // => false
- */
-
-function isProtocol (p) {
-	return !!p.match(/^[a-zA-Z]+:/)
-}
 
 /**
  * Get a local file using a magic path
@@ -88,8 +24,7 @@ function isProtocol (p) {
  * @return {Promise} for a file object
  */
 
-exports.magic = getMagic
-function getMagic (base, name, resolvers) {
+exports.magic = function (base, name, resolvers) {
 	var dir = base
 	var promise = new Promise
 	doUntil(
@@ -121,68 +56,27 @@ function getMagic (base, name, resolvers) {
 }
 
 /**
- * Generate some paths to attempt
- * 
- * @param  {String} p the path
- * @return {Array}   the original path plus any others worth trying
- */
-exports.variants = variants
-function variants (p) {
-	// Always try the path as is first
-	var results = [p]
-	// If its a directory
-	if (p.match(/\/$/)) results.push(
-		p+'index.js',
-		p+'index.json'
-	)
-	// If no extension
-	else if (!p.match(/\.\w+$/)) results.push(
-		p+'.js', 
-		p+'.json', 
-		p+'/index.js', 
-		p+'/index.json'
-	)
-	debug('Variants: %pj', results)
-	return results
-}
-
-/**
- * Retrieve a file from any absolute path
- * 
- * @param  {String} p e.g. http://google.com or /dev/file.js
- * @return {File}   Custom file type conbining meta data and content e.g. {last-modified:x, text:...}
- */
-
-exports.local = getFile
-function getFile (p) {
-	return first(variants(p).map(readFile))
-}
-
-/**
  * Retrieve a file from the internet
  *
  * @param {String} path
  * @return {Promise} for a file object
  */
 
-exports.remote = getRemote
-function getRemote (p) {
-	return first(variants(p).map(function (p) {
-		var promise = new Promise
-		debug('Remote requesting %s', p)
-		request.get(p).buffer().end(function (res) {
-			debug('Response %s => %d', p, res.status)
-			if (!res.ok)
-				promise.reject(res.error)
-			else 
-				promise.resolve({
-					'path': p,
-					'text': res.text,
-					'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
-				})
-		})
-		return promise
-	}))
+exports.remote = function (path) {
+	var promise = new Promise
+	debug('Remote requesting %s', path)
+	request.get(path).buffer().end(function (res) {
+		debug('Response %s => %d', path, res.status)
+		if (!res.ok)
+			promise.reject(res.error)
+		else 
+			promise.resolve({
+				'path': path,
+				'text': res.text,
+				'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
+			})
+	})
+	return promise
 }
 
 /**
@@ -192,8 +86,7 @@ function getRemote (p) {
  * @return {Promise} for a file object
  */
 
-exports.readLocal = readFile
-function readFile (path) {
+exports.local = function (path) {
 	var promise = new Promise
 	fs.stat(path, function (e, stat) {
 		if (e) return promise.reject(e), debug('Local file %s doesn\'t exist', path)

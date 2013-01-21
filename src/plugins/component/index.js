@@ -1,4 +1,4 @@
-var readFile = require('../../file').readLocal
+var readFile = require('../../file').local
   , join = require('path').join
   , fs = require('fs')
 
