@@ -16,21 +16,21 @@ It hasn't yet been implemented but I plan to make sourcegraph a long running pro
 Produces an Array of module object looking a bit like this:
 
     {
-      "base" : "/home/jkroso/Dev/Libraries/SourceGraph/example",
+      "base" : "/home/jkroso/Dev/node/SourceGraph/example",
       "name" : "wife",
       "children" : [
-        "/home/jkroso/Dev/Libraries/SourceGraph/example/children/index.js"
+         "/home/jkroso/Dev/node/SourceGraph/example/children/index.js"
       ],
-      "path" : "/home/jkroso/Dev/Libraries/SourceGraph/example/wife.js",
+      "path" : "/home/jkroso/Dev/node/SourceGraph/example/wife.js",
       "lastModified" : 1358066575000,
       "text" : "require('./children')",
       "requires" : [
-        "./children"
+         "./children"
       ],
       "id" : 2,
       "ext" : "js",
       "parents" : [
-        "/home/jkroso/Dev/Libraries/SourceGraph/example/husband.js"
+         "/home/jkroso/Dev/node/SourceGraph/example/husband.js"
       ]
     }
 
