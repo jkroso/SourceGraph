@@ -1,38 +1,31 @@
 {
   "name": "sourcegraph",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "main": "src/index.js",
   "dependencies": {
     "laissez-faire": "0.9.x",
     "async": "~0.1.22",
-    "when-all": "~0.1.0",
-    "when-first": "~0.1.0",
-    "emitter": "~0.5.0",
-    "debug": "*",
-    "async-loop": "~0.1.0",
-    "async-forEach": "~0.1.0",
+    "debug": "https://github.com/jkroso/debug/tarball/master",
     "superagent": "~0.12.1",
     "commander": "~1.1.1",
-    "winner": "~0.3.0",
     "detective": "~0.2.1",
     "colors": "~0.6.0-1",
     "prettyjson": "~0.7.1",
+    "async-forEach": "https://github.com/jkroso/async-forEach/tarball/master",
+    "async-loop": "https://github.com/jkroso/async-loop/tarball/master",
+    "when-all": "https://github.com/jkroso/when-all/tarball/master",
+    "winner": "https://github.com/jkroso/winner/tarball/master",
+    "emitter": "https://github.com/jkroso/Emitter/tarball/master",
     "when-first": "https://github.com/jkroso/when-first/tarball/master",
     "unique": "https://github.com/jkroso/unique/tarball/master",
-    "find": "https://github.com/jkroso/find/tarball/patch-1"
+    "find": "https://github.com/component/find/tarball/master"
   },
   "devDependencies": {
-    "mocha": "",
-    "chai": "~1.4.2",
-    "colony": "0.0.3"
+    "mocha": "*",
+    "chai": "*",
+    "colony": "*"
   },
-  "bundledDependencies": [
-    "winner",
-    "when-all",
-    "emitter",
-    "async-loop",
-    "async-forEach"
-  ],
+  "bundledDependencies": [],
   "bin": {
     "sourcegraph": "bin/sourcegraph",
     "sourcegraph.js": "bin/sourcegraph.js"

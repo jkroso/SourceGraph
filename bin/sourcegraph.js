@@ -86,7 +86,6 @@ graph.then(
 			process.stdout.write(JSON.stringify(files))
 		}
 		
-		process.stderr.write('\n')
 		process.exit(0)
 	}, 
 	function (error) {

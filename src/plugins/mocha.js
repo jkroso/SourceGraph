@@ -22,10 +22,9 @@ function MochaJS (file) {
 	// Note the path to this module will remain index.js it just
 	// that we switch the contents of that file for that from their
 	// browser build
-	this.path = file.path
-	this.base = path.dirname(file.path)
+	this.path = '/node_modules/mocha/index.js'
 	try {
-		this.text = fs.readFileSync(this.base + '/mocha.js', 'utf-8')
+		this.text = fs.readFileSync(path.dirname(file.path) + '/mocha.js', 'utf-8')
 	} catch (e) {
 		throw new Error('Problem reading mocha\'s browser build')
 	}

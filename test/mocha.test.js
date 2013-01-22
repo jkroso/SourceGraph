@@ -53,7 +53,7 @@ describe('mocha plugin', function () {
 		trace(files, 1)
 		.then(function (files) {
 			var built = top+'/node_modules/mocha/mocha.js'
-			files.should.have.property(top+'/node_modules/mocha/index.js')
+			files.should.have.property('/node_modules/mocha/index.js')
 				.and.property('text', read(built, 'utf-8')+'\nmodule.exports = mocha')
 		})
 		.nend(done)
