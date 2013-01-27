@@ -8,7 +8,7 @@ function Handlebars (file) {
 }
 
 Handlebars.test = function (file) {
-	if (file.path.test(/\.h(?:andlebars|bs)$/)) return 1
+	if (file.path.match(/\.h(?:andlebars|bs)$/)) return 1
 }
 
 /**

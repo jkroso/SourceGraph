@@ -1,9 +1,9 @@
 {
   "name": "sourcegraph",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "main": "src/index.js",
   "dependencies": {
-    "laissez-faire": "0.9.x",
+    "laissez-faire": "0.10.x",
     "async": "~0.1.22",
     "debug": "https://github.com/jkroso/debug/tarball/master",
     "superagent": "~0.12.1",
@@ -18,7 +18,8 @@
     "emitter": "https://github.com/jkroso/Emitter/tarball/master",
     "when-first": "https://github.com/jkroso/when-first/tarball/master",
     "unique": "https://github.com/jkroso/unique/tarball/master",
-    "find": "https://github.com/component/find/tarball/master"
+    "find": "https://github.com/component/find/tarball/master",
+    "jade": "*"
   },
   "devDependencies": {
     "mocha": "*",
