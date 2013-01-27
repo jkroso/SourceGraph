@@ -18,7 +18,8 @@
     "emitter": "https://github.com/jkroso/Emitter/tarball/master",
     "when-first": "https://github.com/jkroso/when-first/tarball/master",
     "unique": "https://github.com/jkroso/unique/tarball/master",
-    "find": "https://github.com/component/find/tarball/master"
+    "find": "https://github.com/component/find/tarball/master",
+    "jade": "~0.28.1"
   },
   "devDependencies": {
     "mocha": "*",
