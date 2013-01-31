@@ -81,7 +81,6 @@ function SudoComponent (file) {
 SudoComponent.prototype.requires = JS.prototype.requires
 
 SudoComponent.test = function (file) {
-	debugger;
 	if (file.path.match(/\/components\/\w+$/)) {
 		if (file.text.match(/^module\.exports\s*=\s*require\([^\)]+\)$/))
 			return Infinity

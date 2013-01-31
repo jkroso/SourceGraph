@@ -1,10 +1,3 @@
-var read = require('fs').readFileSync
-
-var runtime = {
-	path: '/node_modules/jade-runtime.js',
-	text: read(require.resolve('jade/lib/runtime'), 'utf-8')
-}
-
 exports.types = [
 	Jade
 ]
@@ -19,5 +12,5 @@ Jade.test = function (file) {
 }
 
 Jade.prototype.requires = function () {
-	return [runtime]
+	return []
 }

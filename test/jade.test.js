@@ -47,12 +47,6 @@ describe('jade plugin', function () {
 			root+'index.js',
 			root+'tmpl.jade'
 		]
-		trace(files, 1)
-		.then(function (files) {
-			var rt = require.resolve('jade/lib/runtime')
-			files.should.have.property('/node_modules/jade-runtime.js')
-				.and.property('text', read(rt, 'utf-8'))
-		})
-		.nend(done)
+		trace(files).nend(done)
 	})
 })

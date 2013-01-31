@@ -105,24 +105,21 @@ proto.addType = function (type) {
  * @return {Self}
  */
 
-proto.use = function (name) {
+proto.use = function () {
 	// Handle several args
-	if (arguments.length > 1) {
-		for (var i = 0, len = arguments.length; i < len; i++) {
-			this.use(arguments[i])
-		}
-		return this
+	for (var i = 0, len = arguments.length; i < len; i++) {
+		var name = arguments[i]
+		
+		var plug = require(__dirname+'/plugins/'+name)
+		debug('Plugin %s provides: %pj', name, Object.keys(plug))
+
+		plug.fileSystem && this.addOSResolver(plug.fileSystem)
+		plug.hashSystem && this.addHashResolver(plug.hashSystem)
+		
+		plug.types && plug.types.forEach(function (type) {
+			this.addType(type)
+		}, this)
 	}
-
-	var plug = require(__dirname+'/plugins/'+name)
-	debug('Plugin %s provides: %pj', name, Object.keys(plug))
-
-	plug.fileSystem && this.addOSResolver(plug.fileSystem)
-	plug.hashSystem && this.addHashResolver(plug.hashSystem)
-	
-	plug.types && plug.types.forEach(function (type) {
-		this.addType(type)
-	}, this)
 
 	return this
 }
@@ -137,36 +134,34 @@ proto.use = function (name) {
  */
 
 proto.getFile = function (base, name) {
-	var paths = this.completions(name)
-	
 	if (isMagic(name)) {
 		// Note: if the base is remote this won't work
-		return first(paths.map(function (path) {
+		var mapfn = function (path) {
 			return file.magic(base, path, this._osResolvers)
-		}, this))
-	} 
-	
-	if (isProtocol(name)) {
-		return first(paths.map(function(path){
+		}
+	}
+	else if (isProtocol(name)) {
+		var mapfn = function (path) {
 			return file.remote(path)
-		}))
+		}
 	}
-	
-	if (isAbsolute(name)) {
-		return first(paths.map(function(path){
+	else if (isAbsolute(name)) {
+		var mapfn = function (path) {
 			return file.local(path)
-		}))
+		}
 	}
-	
-	if (isProtocol(base)) {
-		return first(paths.map(function(path){
+	else if (isProtocol(base)) {
+		var mapfn = function (path) {
 			return file.remote(url.resolve(base, path))
-		}))
+		}
+	}
+	else {
+		var mapfn = function (path) {
+			return file.local(pathJoin(base, path))
+		}
 	}
 
-	return first(paths.map(function(path){
-		return file.local(pathJoin(base, path))
-	}))
+	return first(this.completions(name).map(mapfn, this))
 }
 
 function isAbsolute (p) {
@@ -321,7 +316,7 @@ proto.addModule = function (base, path) {
 			self.insert(module)
 			return module
 		}
-		debug('__Ignoring__: %s, since it has no module type', file.path)
+		debug('__Ignoring__: %s since it has no module type', file.path)
 	}
 }
 
