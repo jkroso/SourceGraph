@@ -12,5 +12,9 @@ Jade.test = function (file) {
 }
 
 Jade.prototype.requires = function () {
-	return []
+	var requires = []
+	this.text.replace(/^require\s*([.\/\w]+)/mg, function (_, req) {
+		requires.push(req)
+	})
+	return requires
 }

@@ -44,9 +44,16 @@ describe('jade plugin', function () {
 	
 	it('should require the runtime', function (done) {
 		var files = [
-			root+'index.js',
 			root+'tmpl.jade'
 		]
 		trace(files).nend(done)
+	})
+
+	it('should load children in require statements', function (done) {
+		var files = [
+			root+'dep.jade',
+			root+'tmpl.jade'
+		]
+		trace(files).nend(done)		
 	})
 })
