@@ -74,10 +74,11 @@ graph.then(
 	function (files) {
 		if (program.listFiles) {
 			process.stdout.write(
-				renderJSON(
-					files.map(function (file) {
-						return file.path
-					})))
+				renderJSON(files.map(function (file) {
+					return file.path
+				}))
+			)
+			console.log('')
 		}
 		else if (program.beautify) {
 			process.stdout.write(renderJSON(files))

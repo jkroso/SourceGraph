@@ -43,12 +43,12 @@ exports.magic = function (base, name, resolvers) {
 		},
 		function (file) {
 			if (file) {
-				debug('%s resolved to %s', name, file.path)
+				debug('%s -> %s = %s', base, name, file.path)
 				promise.resolve(file)
 			}
 			else {
-				debug('unable to resolve %s from %s base', name, base)
-				promise.reject(new Error('unable to resolve '+name+' from '+base))
+				debug('unable to resolve %s -> %s', base, name)
+				promise.reject(new Error('unable to resolve '+base+' -> '+name))
 			}
 		}
 	)

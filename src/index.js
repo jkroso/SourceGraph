@@ -205,7 +205,7 @@ proto.trace = function (entry) {
 		if (!deps.length) return module
 
 		deps = deps.map(function (path) {
-			debug('#%d fetching: %s from %s', module.id, path, module.base)
+			debug('#%d fetching: %s -> %s', module.id, module.base, path)
 			return self.addModule(module.base, path).end(relate)
 		})
 
@@ -301,7 +301,7 @@ proto.addModule = function (base, path) {
 	}
 
 	return this.getFile(base, path).then(add, function (e) {
-		debug('Failed registration: %s', e)
+		debug('Failed to fetch %s -> %s: %s', base, path, e)
 		self.emit('load-error', e)
 	})
 
