@@ -1,0 +1,1 @@
+require('overlay/component.json')

@@ -1,28 +1,25 @@
+
 var detectSeries = require('async').detectSeries
   , readFile = require('../../file').local
   , join = require('path').join
   , fs = require('fs')
 
-/*!
- * Location of core node modules
- */
+// Location of core node modules
 var base = __dirname + '/modules/'
 
-/*!
- * Create a mapping of available core node modules
- */
+// Create a mapping of available core node modules
 var core = fs.readdirSync(base).reduce(function (acc, x) {
 	acc[x] = true
 	return acc
 }, {})
 
 /**
- * Produce an ordered list of path to try
+ * Produce an ordered list of paths to try
  * 
  * @param {String} dir
  * @param {String} path
  * @return {Array} of path
- * @api private
+ * @private
  */
 
 function variants (dir, path) {
@@ -56,6 +53,9 @@ function variants (dir, path) {
 
 /**
  * Look for a given module with a given directory
+ * 
+ * Note: In node, core modules, take priority over custom
+ * ones. In this system they don't since I find it a pain
  *
  * @param {String} dir
  * @param {String} name
@@ -67,11 +67,7 @@ exports.fileSystem = function (dir, name, done) {
 		if (winner) {
 			readFile(winner).end(done)
 		} else {
-			// In node core modules take priority over custom
-			// This doesn't work when building projects with other systems so instead here 
-			// built in modules take the lowest priority. They probably should in node too but 
-			// they don't so this could cause bugs for some node modules. I've made the call to 
-			// differ here since I believe it will cause less problems than it creates.
+			// node core
 			if (dir === '/' && core[name+'.js']) {
 				readFile(base+name+'.js').then(function (file) {
 					// Pretend the file came from a global node_modules directory
@@ -97,23 +93,34 @@ exports.fileSystem = function (dir, name, done) {
 
 exports.hashSystem = function (dir, name, hash) {
 	var match = variants(dir, name).filter(function (p) {
-		return !!hash[p]
-	})[0]
+		return p in hash
+	})
 
-	if (match) return match
+	if (match.length) {
+		if (match.length > 1) console.warn('%s -> %s has several matches', dir, name)
+		return match[0]
+	}
 
-	if (dir === '/' && hash['/node_modules/'+name+'.js'])
-		// Note: we always add ".js" at the end since node won't interpret those as core modules
+	// core modules
+	if (dir === '/' && hash['/node_modules/'+name+'.js']) {
 		return '/node_modules/'+name+'.js'
+	}
 }
+
+exports.types = [
+	Component,
+	NodePackage
+]
 
 /**
  * Handler for package.json files
+ * 
+ * npm package.json files sometimes include a `main` 
+ * property. If so that file would likely otherwise 
+ * not be picked up. In general though all dependencies
+ * for npm packages is found within the source files 
+ * themselves
  */
-
-exports.types = [
-	NodePackage
-]
 
 function NodePackage (file) {
 	this.path = file.path
@@ -134,9 +141,64 @@ NodePackage.prototype.requires = function () {
 	return deps
 }
 
+/**
+ * Extract dependency info from component.json files.
+ * 
+ * [components](github.com/component/component) are typically straight
+ * forward to use from node style code but if they include css or images 
+ * its unlikely they will be required anywhere other that in the `.json`
+ *
+ * To use a component from node style code you should 
+ * `require('foo/component.json')` rather than simply `require('foo')`
+ */
+
+function Component (file) {
+	this.path = file.path
+	this.text = file.text
+}
+
+Component.test = function (file) {
+	if (file.path.match(/\/component\.json$/)) {
+		return 2
+	}
+}
+
+Component.prototype.requires = function () {
+	var data = JSON.parse(this.text)
+	  , deps = []
+	  , base = this.base
+
+	data.dependencies && Object.keys(data.dependencies).forEach(function (dep) {
+		// only interested in the components name since 
+		// we are pretending this is a npm package
+		deps.push(dep.split('/')[1])
+	})
+
+	// js files
+	if (data.scripts) {
+		if (!(data.scripts instanceof Array)) throw new Error('Scripts should be an array')
+		data.scripts.forEach(function (path) {
+			// paths are always relative but they may not be written that way
+			if (path.match(/^\w/)) path = './'+path
+			deps.push(path)
+		})
+	}
+
+	// css files
+	data.styles && data.styles.forEach(function (path) {
+		if (path.match(/^\w/)) path = './'+path
+		deps.push(path)
+	})
+
+	// TODO: templates
+
+	return deps
+}
+
 /*!
  * Expose the variants function and base path for others to use
  * For example bigfile uses them in its development builds
  */
+
 exports.variants = variants
 exports.basePath = base

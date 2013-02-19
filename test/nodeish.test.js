@@ -42,7 +42,7 @@ describe('node modules magic', function () {
 		g.use('nodeish')
 		g._osResolvers.should.have.a.lengthOf(1)
 		g._hashResolvers.should.have.a.lengthOf(1)
-		g._types.should.have.a.lengthOf(1)
+		g._types.should.have.a.lengthOf(2)
 	})
 
 	beforeEach(function () {
@@ -50,6 +50,7 @@ describe('node modules magic', function () {
 		graph.use('nodeish')
 		graph.use('javascript')
 		graph.use('json')
+		graph.use('css')
 	})
 
 	var base = __dirname + '/fixtures/node'
@@ -137,6 +138,18 @@ describe('node modules magic', function () {
 			dir+'pair-a.js',
 			dir+'pair-b.js',
 			dir+'pair-c.js'
+		]
+		trace(files).nend(done)
+	})
+
+	it('should handle component.json files which include styles', function (done) {
+		var dir = base + '/with-component/'
+		var files = [
+			dir+'index.js',
+			dir+'node_modules/overlay/component.json',
+			dir+'node_modules/overlay/index.js',
+			dir+'node_modules/overlay/overlay.css',
+			dir+'node_modules/emitter.js'
 		]
 		trace(files).nend(done)
 	})
