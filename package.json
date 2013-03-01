@@ -5,19 +5,19 @@
   "dependencies": {
     "laissez-faire": "0.10.x",
     "async": "~0.1.22",
-    "debug": "https://github.com/jkroso/debug/tarball/master",
-    "superagent": "~0.12.1",
+    "debug": "*",
+    "superagent": "~0.12.4",
     "commander": "~1.1.1",
     "detective": "~0.2.1",
     "colors": "~0.6.0-1",
     "prettyjson": "~0.7.1",
-    "async-forEach": "https://github.com/jkroso/async-forEach/tarball/master",
-    "async-loop": "https://github.com/jkroso/async-loop/tarball/master",
+    "async-forEach": "https://github.com/jkroso/async-forEach/tarball/0.1.0",
+    "async-loop": "https://github.com/jkroso/async-loop/tarball/0.2.0",
     "when-all": "https://github.com/jkroso/when-all/tarball/master",
-    "winner": "https://github.com/jkroso/winner/tarball/master",
-    "when-first": "https://github.com/jkroso/when-first/tarball/master",
+    "winner": "https://github.com/jkroso/winner/tarball/0.3.2",
+    "when-first": "https://github.com/jkroso/when-first/tarball/0.1.1",
     "unique": "https://github.com/jkroso/unique/tarball/master",
-    "find": "https://github.com/component/find/tarball/master"
+    "find": "git://github.com/component/find"
   },
   "devDependencies": {
     "mocha": "*",
