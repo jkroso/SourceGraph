@@ -31,10 +31,8 @@ exports.magic = function (base, name, resolvers) {
 	doWhile(
 		function (done) {
 			series(resolvers, function (checker, next) {
-				if (checker.length > 2)
-					checker(dir, name, next)
-				else
-					next(checker(dir, name))
+				if (checker.length > 2) checker(dir, name, next)
+				else next(checker(dir, name))
 			}, function(file){
 				var cont = dir !== '/'
 				dir = dirname(dir)
@@ -45,8 +43,7 @@ exports.magic = function (base, name, resolvers) {
 			if (file) {
 				debug('%s -> %s = %s', base, name, file.path)
 				promise.resolve(file)
-			}
-			else {
+			} else {
 				debug('unable to resolve %s -> %s', base, name)
 				promise.reject(new Error('unable to resolve '+base+' -> '+name))
 			}
@@ -68,14 +65,15 @@ exports.remote = function (path) {
 	debug('Remote requesting %s', path)
 	request.get(path).buffer().end(function (res) {
 		debug('Response %s => %d', path, res.status)
-		if (!res.ok)
+		if (!res.ok) {
 			promise.reject(res.error)
-		else 
+		} else {
 			promise.resolve({
 				'path': path,
 				'text': res.text,
 				'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
 			})
+		} 
 	})
 	return promise
 }
@@ -90,7 +88,10 @@ exports.remote = function (path) {
 exports.local = function (path) {
 	var promise = new Promise
 	fs.stat(path, function (e, stat) {
-		if (e) return promise.reject(e), debug('Local file %s doesn\'t exist', path)
+		if (e) {
+			debug('Local file %s doesn\'t exist', path)
+			return promise.reject(e)
+		}
 		fs.readFile(path, 'utf-8', function (e, txt) {
 			if (e) return promise.reject(e), debug('Problem reading %s', path)
 			promise.resolve({

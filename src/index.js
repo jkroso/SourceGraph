@@ -389,11 +389,11 @@ Graph.prototype.has = function (base, path) {
 /**
  * Create a list of possible inferred files names
  *
- *   completions('path', types) // => ['path.js', 'path/index.js']
+ *   completions('path') // => ['path.js', 'path/index.js']
  * 
  * @param  {String} path
  * @return {Array}
- * @api private
+ * @private
  */
 
 Graph.prototype.completions = function (path) {

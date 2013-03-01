@@ -84,7 +84,7 @@ graph.then(
 			process.stdout.write(renderJSON(files))
 		}
 		else {
-			process.stdout.write(JSON.stringify(files))
+			process.stdout.write(JSON.stringify(files, null, 2))
 		}
 		
 		process.exit(0)
