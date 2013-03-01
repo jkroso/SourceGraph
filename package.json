@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "main": "src/index.js",
   "dependencies": {
     "laissez-faire": "0.10.x",
@@ -15,15 +15,13 @@
     "async-loop": "https://github.com/jkroso/async-loop/tarball/master",
     "when-all": "https://github.com/jkroso/when-all/tarball/master",
     "winner": "https://github.com/jkroso/winner/tarball/master",
-    "emitter": "https://github.com/jkroso/Emitter/tarball/master",
     "when-first": "https://github.com/jkroso/when-first/tarball/master",
     "unique": "https://github.com/jkroso/unique/tarball/master",
     "find": "https://github.com/component/find/tarball/master"
   },
   "devDependencies": {
     "mocha": "*",
-    "chai": "*",
-    "colony": "*"
+    "chai": "*"
   },
   "bundledDependencies": [],
   "bin": {

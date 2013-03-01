@@ -4,7 +4,6 @@ var path = require('path')
   , url = require('url')
   , file = require('./file')
   , Promise = require('laissez-faire')
-  , Emitter = require('emitter')
   , winner = require('winner')
   , all = require('when-all')
   , first = require('when-first').seq
@@ -12,13 +11,7 @@ var path = require('path')
   , find = require('find')
   , debug = require('debug')('sourcegraph')
 
-exports = module.exports = Graph
-
-/*!
- * Inherit from Emitter
- */
-var proto = Graph.prototype
-proto.__proto__ = Emitter.prototype
+module.exports = Graph
 
 /**
  * Graphs represent the complete source code of your program.
@@ -32,7 +25,6 @@ proto.__proto__ = Emitter.prototype
  */
 
 function Graph () {
-	Emitter.call(this)
 	this._types = []
 	this._hashResolvers = []
 	this._osResolvers = []
@@ -49,7 +41,7 @@ function Graph () {
  * @api private
  */
 
-proto.addOSResolver = function (fn) {
+Graph.prototype.addOSResolver = function (fn) {
 	this._osResolvers.push(fn)
 	return this
 }
@@ -63,7 +55,7 @@ proto.addOSResolver = function (fn) {
  * @api private
  */
 
-proto.addHashResolver = function (fn) {
+Graph.prototype.addHashResolver = function (fn) {
 	this._hashResolvers.push(fn)
 	return this
 }
@@ -91,7 +83,7 @@ proto.addHashResolver = function (fn) {
  * @return {Self}
  */
 
-proto.addType = function (type) {
+Graph.prototype.addType = function (type) {
 	if (typeof type !== 'function')
 		throw new Error('Expected a function')
 	this._types.push(type)
@@ -105,7 +97,7 @@ proto.addType = function (type) {
  * @return {Self}
  */
 
-proto.use = function () {
+Graph.prototype.use = function () {
 	// Handle several args
 	for (var i = 0, len = arguments.length; i < len; i++) {
 		var name = arguments[i]
@@ -133,7 +125,7 @@ proto.use = function () {
  * @api private
  */
 
-proto.getFile = function (base, name) {
+Graph.prototype.getFile = function (base, name) {
 	if (isMagic(name)) {
 		// Note: if the base is remote this won't work
 		var mapfn = function (path) {
@@ -177,13 +169,13 @@ function isProtocol (p) {
 }
 
 /**
- * Recursive version of `proto.add`
+ * Recursive version of `Graph.prototype.add`
  * 
  * @param  {String} entry, a path to a file
  * @return {Self}
  */
 
-proto.trace = function (entry) {
+Graph.prototype.trace = function (entry) {
 	var self = this
 	var promise = this.addModule('/', entry).then(function trace (module) {
 		if (!module) return
@@ -234,7 +226,7 @@ proto.trace = function (entry) {
  * @return {Promise} for an array of modules
  */
 
-proto.then = function (callback, fail) {
+Graph.prototype.then = function (callback, fail) {
 	return all(this._pending).yeild(this.data).then(callback, fail)
 }
 
@@ -246,7 +238,7 @@ proto.then = function (callback, fail) {
  * @api private
  */
 
-proto.resolveInternal = function (base, path) {
+Graph.prototype.resolveInternal = function (base, path) {
 	if (!path) throw new Error('No path provided in a require from '+base)
 	var hash = this.data
 	// Is it a proper path
@@ -260,7 +252,7 @@ proto.resolveInternal = function (base, path) {
 			return path in hash
 		})
 	}
-	// Or a protocol
+	// Or a Graph.prototypecol
 	else if (path.match(/^[a-zA-Z]+:/)) {
 		if (path in hash) return path
 	}
@@ -289,10 +281,10 @@ proto.resolveInternal = function (base, path) {
  * @param {String} path
  * @return {Promise} for the module that gets inserted
  *
- * TODO: implement dispatch on protocol. eg http https git ftp ...etc
+ * TODO: implement dispatch on Graph.prototypecol. eg http https git ftp ...etc
  */
 
-proto.addModule = function (base, path) {
+Graph.prototype.addModule = function (base, path) {
 	var self = this
 
 	if (typeof path === 'object') {
@@ -302,7 +294,6 @@ proto.addModule = function (base, path) {
 
 	return this.getFile(base, path).then(add, function (e) {
 		debug('Failed to fetch %s -> %s: %s', base, path, e)
-		self.emit('load-error', e)
 	})
 
 	function add (file) {
@@ -327,7 +318,7 @@ proto.addModule = function (base, path) {
  * @public
  */
 
-proto.add = function (path) {
+Graph.prototype.add = function (path) {
 	var promise = this.addModule('/', path)
 	promise && this._pending.push(promise)
 	return this
@@ -339,8 +330,7 @@ proto.add = function (path) {
  * @param {Module} module
  */
 
-proto.insert = function (module) {
-	this.emit('new-module', module)
+Graph.prototype.insert = function (module) {
 	this.data.push(module)
 	this.data[module.path] = module
 	module.id = this.data.length
@@ -381,7 +371,7 @@ function modulize (types, file) {
  * @return {Module}
  */
 
-proto.get = function (base, path) {
+Graph.prototype.get = function (base, path) {
 	return this.data[this.resolveInternal(base, path)]
 }
 
@@ -392,7 +382,7 @@ proto.get = function (base, path) {
  * @return {Boolean}
  */
 
-proto.has = function (base, path) {
+Graph.prototype.has = function (base, path) {
 	return this.resolveInternal(base, path) !== undefined
 }
 
@@ -406,7 +396,7 @@ proto.has = function (base, path) {
  * @api private
  */
 
-proto.completions = function (path) {
+Graph.prototype.completions = function (path) {
 	var types = this._types
 	var result = [path]
 	for (var i = 0, len = types.length; i < len; i++) {
@@ -415,5 +405,5 @@ proto.completions = function (path) {
 			result = result.concat(Type.completions(path))
 		}
 	}
-	return result
+	return unique(result)
 }

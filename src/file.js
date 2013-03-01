@@ -2,7 +2,7 @@ var fs = require('fs')
   , dirname = require('path').dirname
   , Promise = require('laissez-faire')
   , request = require('superagent')
-  , doUntil = require('async-loop').doUntil
+  , doWhile = require('async-loop').doWhile
   , series = require('async-forEach').series
   , debug = require('debug')('getfile')
 
@@ -27,19 +27,19 @@ var fs = require('fs')
 exports.magic = function (base, name, resolvers) {
 	var dir = base
 	var promise = new Promise
-	doUntil(
+	
+	doWhile(
 		function (done) {
 			series(resolvers, function (checker, next) {
 				if (checker.length > 2)
 					checker(dir, name, next)
 				else
-					checker(dir, name), next()
-			}, done)
-		},
-		function () {
-			var res = dir === '/'
-			dir = dirname(dir)
-			return res
+					next(checker(dir, name))
+			}, function(file){
+				var cont = dir !== '/'
+				dir = dirname(dir)
+				done(file, cont)
+			})
 		},
 		function (file) {
 			if (file) {
@@ -52,6 +52,7 @@ exports.magic = function (base, name, resolvers) {
 			}
 		}
 	)
+
 	return promise
 }
 

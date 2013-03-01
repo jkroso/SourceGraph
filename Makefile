@@ -1,12 +1,9 @@
 Reporter = dot
 
-all: colony Readme.md
+all: Readme.md
 
 install: 
 	@npm install
-
-colony:
-	@node_modules/.bin/colony src/index.js -r Readme.md -s 2
 
 test:
 	@node_modules/.bin/mocha -R $(Reporter) -t 0 --slow 3s
