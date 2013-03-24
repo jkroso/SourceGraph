@@ -14,7 +14,13 @@ Javascript.test = function (file) {
 }
 
 Javascript.prototype.requires = function () {
-	return detective(this.text)
+	try {
+		var files = detective(this.text)
+	} catch (e) {
+		e.message += ' in '+this.path
+		throw e
+	}
+	return files
 }
 
 /**
