@@ -2,7 +2,7 @@
  * Modules deps
  */
 
-var toFunction = require('to-function')
+// var toFunction = require('to-function')
 
 /**
  * Compare the values of an array based on some comparison 

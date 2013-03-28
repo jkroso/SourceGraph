@@ -177,7 +177,7 @@ it('can define custom handlers', function(done) {
 		}).nend(done)
 })
 
-it('should not include files it has not match for', function (done) {
+it('should not include files it has no match for', function (done) {
 	var p = __dirname + '/fixtures/non_js/example.rndom'
 	
 	graph.trace(p).then(function (data) {

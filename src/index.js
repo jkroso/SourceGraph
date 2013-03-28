@@ -1,3 +1,10 @@
+
+/**
+ * wow this looks bad. 
+ * TODO: seperate config code from the business stuff
+ * TODO: errors should show the file they stem from 
+ */
+
 var path = require('path')
   , dirname = path.dirname
   , pathJoin = path.join
@@ -281,7 +288,7 @@ Graph.prototype.resolveInternal = function (base, path) {
  * @param {String} path
  * @return {Promise} for the module that gets inserted
  *
- * TODO: implement dispatch on Graph.prototypecol. eg http https git ftp ...etc
+ * TODO: implement dispatch on Graph.protocol. eg http https git ftp ...etc
  */
 
 Graph.prototype.addModule = function (base, path) {
@@ -289,25 +296,24 @@ Graph.prototype.addModule = function (base, path) {
 
 	if (typeof path === 'object') {
 		debug('Sudo file')
-		return Promise.fulfilled(path).then(add)
+		return Promise.fulfilled(add(path))
 	}
 
 	return this.getFile(base, path).then(add, function (e) {
-		debug('Failed to fetch %s -> %s: %s', base, path, e)
-	})
+		if (/$(?:\.|\/|\w+\:)/.test(path)) throw new Error('unable to find  '+path)
+		throw new Error('unable to find "'+path+'" from "'+base+'"')
+	}).throw()
 
 	function add (file) {
 		debug('Received: %s', file.path)
 		if (self.data[file.path]) {
-			debug('A file like it has been added while in flight though so it will not be added again')
+			debug('It has been added while in flight though so it will not be added again')
 			return
 		}
 		var module = modulize(self._types, file)
-		if (module) {
-			self.insert(module)
-			return module
-		}
-		debug('__Ignoring__: %s since it has no module type', file.path)
+		if (!module) throw new Error('no module type for '+file.path)
+		self.insert(module)
+		return module
 	}
 }
 
