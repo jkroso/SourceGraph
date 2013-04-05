@@ -23,12 +23,8 @@ var core = fs.readdirSync(base).reduce(function (acc, x) {
  */
 
 function variants (dir, path) {
-	// Is it a full path already
-	if (path.match(/\.js(?:on)?$/)) {
-		path = [path]
-	}
 	// A directory
-	else if (path.match(/\/$/)) {
+	if (path.match(/\/$/)) {
 		path = [
 			path+'index.js',
 			path+'index.json',
@@ -38,6 +34,7 @@ function variants (dir, path) {
 	// could be a directory or a file
 	else {
 		path = [
+			path,
 			path+'.js',
 			path+'.json',
 			path+'/index.js',
@@ -61,7 +58,7 @@ function variants (dir, path) {
  * @param {String} name
  * @param {Function} done to pass results to when ready
  */
-
+// note: this is crap `fs.exists` picks up dirs and files
 exports.fileSystem = function (dir, name, done) {
 	detectSeries(variants(dir, name), fs.exists, function(winner){
 		if (winner) {
