@@ -1,32 +1,18 @@
+
 var fs = require('fs')
-  , read = fs.readFileSync
   , path = require('path')
   , resolve = path.resolve
   , should = require('chai').should()
   , expect = require('chai').expect
-  , Graph = require('../src')
+  , Graph = require('..')
+  , run = require('./utils').run
 
 var graph
-
-/**
- * Helper for checking graphs creating graphs and checking 
- * they contain what they should
- *
- * @param {Array} files, the first path should be the entry file
- * @return {Promise} for completion
- */
-
-function trace (files, extra) {
-	return graph.trace(files[0]).then(function(data) {
-		data.should.have.a.lengthOf(files.length + (extra || 0))
-		files.forEach(function (path) {
-			data.should.have.property(path)
-				.and.property('text', read(path, 'utf-8'))
-		})
-	})
-}
-
 var node = require('../src/plugins/nodeish')
+
+function read(path){
+	return fs.readFileSync(path, 'utf-8').toString()
+}
 
 describe('hashSystem', function () {
 	it('should return a full path', function () {
@@ -40,16 +26,14 @@ describe('node modules magic', function () {
 	it('should load the plugin', function () {
 		var g = new Graph
 		g.use('nodeish')
-		g._osResolvers.should.have.a.lengthOf(1)
-		g._hashResolvers.should.have.a.lengthOf(1)
-		g._types.should.have.a.lengthOf(2)
+		g.fsReaders.should.have.a.lengthOf(1)
+		g.hashReaders.should.have.a.lengthOf(1)
+		g.types.should.have.a.lengthOf(4)
 	})
 
 	beforeEach(function () {
 		graph = new Graph
 		graph.use('nodeish')
-		graph.use('javascript')
-		graph.use('json')
 		graph.use('css')
 	})
 
@@ -60,7 +44,7 @@ describe('node modules magic', function () {
 			base+'/expandsingle/index.js',
 			base+'/expandsingle/node_modules/foo.js'
 		]
-		trace(files).nend(done)
+		run(graph, files).node(done)
 	})
 
 	it('even if it isn\'t relative but has a .js on the end', function (done) {
@@ -68,7 +52,7 @@ describe('node modules magic', function () {
 			base+'/with_extension/index.js',
 			base+'/with_extension/node_modules/foo.js'
 		]
-		trace(files).nend(done)
+		run(graph, files).node(done)
 	})
 
 	it('can include a npm package folder from an index.js', function (done) {
@@ -76,7 +60,7 @@ describe('node modules magic', function () {
 			base+'/expandindex/index.js',
 			base+'/expandindex/node_modules/foo/index.js'
 		]
-		trace(files).nend(done)
+		run(graph, files).node(done)
 	})
 
 	it('can add a package thats lacks an index', function(done) {
@@ -85,7 +69,7 @@ describe('node modules magic', function () {
 			base+'/expandpackage/node_modules/foo/package.json',
 			base+'/expandpackage/node_modules/foo/lib/sub.js'
 		]
-		trace(files).nend(done)
+		run(graph, files).node(done)
 	})
 
 	it('when a dependency has a dependency it gets resolved as well', function(done) {
@@ -94,7 +78,7 @@ describe('node modules magic', function () {
 			base+'/hassubdependency/node_modules/foo/index.js',
 			base+'/hassubdependency/node_modules/foo/node_modules/bar/index.js'
 		]
-		trace(files).nend(done)
+		run(graph, files).node(done)
 	})
 	
 	it('when deps are mixed', function(done) {
@@ -105,7 +89,7 @@ describe('node modules magic', function () {
 			base+'/mixed_deps/node_modules/bbb.js',
 			base+'/mixed_deps/node_modules/aaa/node_modules/ccc/index.js'
 		]
-		trace(files).nend(done)
+		run(graph, files).node(done)
 	})
 	
 	it('should resolve core modules with the lowest priority', function (done) {
@@ -114,21 +98,15 @@ describe('node modules magic', function () {
 			base+'/core/node_modules/path.js'
 		]
 
-		trace(files, 1).nend(done)	
+		run(graph, files, 1).node(done)	
 	})
 
 	it('should pretend core node modules are located in a global folder', function (done) {
-		var files = [
-			base+'/core/index.js',
-			base+'/core/node_modules/path.js'
-		]
-
 		var eventsPath = resolve(__dirname, '../src/plugins/nodeish/modules/events.js')
-
-		graph.trace(files[0]).then(function(data) {
+		graph.add(base+'/core/index.js').then(function(data) {
 			data.should.have.property('/node_modules/events.js')
-				.and.property('text', read(eventsPath, 'utf-8'))
-		}).nend(done)
+				.and.property('text', read(eventsPath))
+		}).node(done)
 	})
 
 	it('should prevent duplicate dependencies being output', function (done) {
@@ -139,10 +117,10 @@ describe('node modules magic', function () {
 			dir+'pair-b.js',
 			dir+'pair-c.js'
 		]
-		trace(files).nend(done)
+		run(graph, files).node(done)
 	})
 
-	it('should handle component.json files which include styles', function (done) {
+	it.skip('should handle component.json files which include styles', function (done) {
 		var dir = base + '/with-component/'
 		var files = [
 			dir+'index.js',
@@ -151,7 +129,7 @@ describe('node modules magic', function () {
 			dir+'node_modules/overlay/overlay.css',
 			dir+'node_modules/emitter.js'
 		]
-		trace(files).nend(done)
+		run(graph, files).node(done)
 	})
 	
 	it('should not include unused dependencies mentioned in package.json')

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 var program = require('commander')
-  , Graph = require('../src')
+  , Graph = require('..')
   , path = require('path')
   , renderJSON = require('prettyjson').render
   , fs = require('fs')
+  , all = require('when-all')
   , debug = require('debug')('sourcegraph:cli')
 
 require('colors')
@@ -13,7 +14,8 @@ program.version(require('../package').version)
 	.usage('[options] <entry files...> usually there is only one')
 	.option('-p, --plugins <plugins...>', 'A comma separated list of plugins', list)
 	.option('-b, --beautify', 'present the output for humans')
-	.option('-f, --list-files', 'just list the names of the files found')
+	.option('-l, --list-files', 'list all files in the graph')
+	.option('-m, --menu', 'list available plugins')
 	.option('-d, debug', 'sourcegraph takes any of node\'s debug options')
 
 function list (args) {
@@ -21,45 +23,32 @@ function list (args) {
 }
 
 program.on('--help', function () {
-	console.log('  Examples: ')
-	console.log('')
+	write('  Examples: \n')
+	write('\n')
+	write('    # basic (outputs a list of file objects)\n')
+	write('    $ '.blue + 'sourcegraph examples/husband.js -p javascript\n')
+	write('\n')
 })
-
-program.command('list')
-	.description('show available plugins')
-	.action(function (cmd) {
-		var list = fs.readdirSync(path.resolve(__dirname, '../src/plugins'))
-		console.log('')
-		console.log('  Available plugins: \n%s', render(list))
-		console.log('')
-
-		function removeExt (file) {
-			return file.replace(/\.js$/, '')
-		}
-		function render (list) {
-			return renderJSON(list.map(removeExt).sort()).replace(/^/gm, '    ')
-		}
-		process.exit(0)
-	})
 
 program.parse(process.argv)
 
-var graph = new Graph
+// display available plugins
+if (program.menu) (function(){
+	var list = fs.readdirSync(path.resolve(__dirname, '../src/plugins'))
+	console.log('')
+	console.log('  Available plugins: \n%s', render(list))
+	console.log('')
 
-if (!program.args) {
-	console.warn('You need to provide at least on entry file')
+	function removeExt (file) {
+		return file.replace(/\.js$/, '')
+	}
+	function render (list) {
+		return renderJSON(list.map(removeExt).sort()).replace(/^/gm, '    ')
+	}
 	process.exit(0)
-}
+})()
 
-// Convert to absolute paths
-var files = program.args.map(function (file) {
-	return path.resolve(file)
-})
-
-files.forEach(function (file) {
-	console.warn(('Tracing from file: %s').green, file)
-	graph.trace(file)
-})
+var graph = new Graph
 
 if (!program.plugins) {
 	console.warn('You should probably specify at least one plugin')
@@ -70,29 +59,40 @@ if (!program.plugins) {
 	})
 }
 
-graph.then(
-	function (files) {
-		if (program.listFiles) {
-			process.stdout.write(
-				renderJSON(files.map(function (file) {
-					return file.path
-				}))
-			)
-			console.log('')
-		}
-		else if (program.beautify) {
-			process.stdout.write(renderJSON(files))
-		}
-		else {
-			process.stdout.write(JSON.stringify(files, null, 2))
-		}
-		
-		process.exit(0)
-	}, 
-	function (error) {
-		console.warn(error)
-		process.exit(1)
-	})
+if (!program.args) {
+	console.warn('You need to provide at least on entry file')
+	process.exit(0)
+}
 
-/*.option('--mw <middleware...>',
-	'A comma seperated list of middleware. Note: these will be used in place of the default rather than in addition', list)*/
+// Convert to absolute paths
+var files = program.args.map(function(file){
+	return path.resolve(file)
+})
+
+var pending = files.map(function(file){
+	console.warn(('Tracing from file: %s').green, file)
+	return graph.add(file)
+})
+
+all(pending).then(function(files){
+	// there all the same object so pick any one
+	files = files[0]
+	var paths = Object.keys(files)
+
+	// print
+	if (program.listFiles) {
+		if (program.beautify) write(renderJSON(paths))
+		else write(JSON.stringify(paths, null, 2))
+	} else {
+		// to array
+		files = paths.map(function(path){ return files[path] })
+		if (program.beautify) write(renderJSON(files))
+		else write(JSON.stringify(files, null, 2))
+	}
+
+	write('\n')
+}).throw()
+
+function write(s){
+	process.stdout.write(s)
+}

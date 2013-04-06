@@ -1,4 +1,5 @@
-var Graph = require('../src')
+
+var Graph = require('..')
   , prettyjson = require('prettyjson').render
 
 /*!
@@ -10,9 +11,10 @@ var dirRegex = new RegExp('^'+__dirname);
 
 new Graph()
 	.use('javascript')
-	.trace(entry)
+	.add(entry)
 	.then(function (files) {
-		files.forEach(function (file) {
+		Object.keys(files).forEach(function (file) {
+			file = files[file]
 			file.base = file.base.replace(dirRegex, '')
 			file.path = file.path.replace(dirRegex, '')
 			file.children = file.children.map(function (path) {

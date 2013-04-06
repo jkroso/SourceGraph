@@ -1,9 +1,8 @@
 {
   "name": "sourcegraph",
-  "version": "0.5.0",
-  "main": "src/index.js",
+  "version": "0.6.0",
   "dependencies": {
-    "laissez-faire": "0.10.x",
+    "laissez-faire": "~0.11.0",
     "async": "~0.1.22",
     "debug": "*",
     "superagent": "~0.12.4",
@@ -13,10 +12,11 @@
     "prettyjson": "~0.7.1",
     "async-forEach": "https://github.com/jkroso/async-forEach/tarball/0.1.0",
     "async-loop": "https://github.com/jkroso/async-loop/tarball/0.2.0",
-    "when-all": "https://github.com/jkroso/when-all/tarball/master",
+    "when-all": "https://github.com/jkroso/when-all/tarball/0.2.0",
     "winner": "https://github.com/jkroso/winner/tarball/0.3.2",
-    "when-first": "https://github.com/jkroso/when-first/tarball/0.1.1",
-    "unique": "https://github.com/jkroso/unique/tarball/master",
+    "when-first": "https://github.com/jkroso/when-first/archive/0.2.0.tar.gz",
+    "detect": "https://github.com/jkroso/detect/archive/0.1.0.tar.gz",
+    "unique": "https://github.com/jkroso/unique/archive/master.tar.gz",
     "find": "git://github.com/component/find"
   },
   "devDependencies": {
@@ -24,7 +24,6 @@
     "chai": "*"
   },
   "bundledDependencies": [
-    "when-all",
     "unique",
     "find"
   ],

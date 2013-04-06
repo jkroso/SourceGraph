@@ -1,6 +1,6 @@
 
-var detectSeries = require('async').detectSeries
-  , readFile = require('../../file').local
+var detect = require('detect/series')
+  , readFile = require('../../file').fs
   , join = require('path').join
   , fs = require('fs')
 
@@ -58,24 +58,23 @@ function variants (dir, path) {
  * @param {String} name
  * @param {Function} done to pass results to when ready
  */
-// note: this is crap `fs.exists` picks up dirs and files
-exports.fileSystem = function (dir, name, done) {
-	detectSeries(variants(dir, name), fs.exists, function(winner){
-		if (winner) {
-			readFile(winner).end(done)
-		} else {
-			// node core
-			if (dir === '/' && core[name+'.js']) {
-				readFile(base+name+'.js').then(function (file) {
-					// Pretend the file came from a global node_modules directory
-					// Which in my opinion is where it should of come from anyway
-					file.path = '/node_modules/'+name+'.js'
-					return file
-				}).end(done)
-			} else {
-				done()
-			}
+
+exports.fileSystem = function(dir, name){
+	return detect(variants(dir, name), function(path, cb){
+		fs.stat(path, function(err, stat){
+			cb(!err && stat.isFile())
+		})
+	}).then(readFile, function(reason){
+		// node core
+		if (dir === '/' && core[name+'.js']) {
+			return readFile(base+name+'.js').then(function (file) {
+				// Pretend the file came from a global node_modules directory
+				file.path = '/node_modules/'+name+'.js'
+				return file
+			})
 		}
+		reason.message = 'unable to find ' + dir + ' -> ' + name
+		throw reason
 	})
 }
 
@@ -94,7 +93,8 @@ exports.hashSystem = function (dir, name, hash) {
 	})
 
 	if (match.length) {
-		if (match.length > 1) console.warn('%s -> %s has several matches', dir, name)
+		if (match.length > 1) 
+			console.warn('%s -> %s has several matches', dir, name)
 		return match[0]
 	}
 
@@ -106,7 +106,9 @@ exports.hashSystem = function (dir, name, hash) {
 
 exports.types = [
 	Component,
-	NodePackage
+	NodePackage,
+	require('../javascript').types[0],
+	require('../json').types[0]
 ]
 
 /**

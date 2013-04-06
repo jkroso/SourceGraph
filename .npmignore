@@ -1,7 +1,13 @@
-*.sublime-*
-/colony
+/.gitignore
+/.npmignore
 /node_modules
-/docs
-/example
+/components
+/build
+/License
 /test
 /Makefile
+/examples
+/dist
+/component.json
+*.sublime-project
+*.sublime-workspace

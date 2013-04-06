@@ -1,106 +1,89 @@
+
 var fs = require('fs')
-  , dirname = require('path').dirname
+  , path = require('path')
+  , util = require('./utils')
   , Promise = require('laissez-faire')
   , request = require('superagent')
-  , doWhile = require('async-loop').doWhile
-  , series = require('async-forEach').series
+  , doUntil = require('async-loop').doUntil
+  , first = require('when-first/series')
   , debug = require('debug')('getfile')
 
-/**
- * Get a local file using a magic path
- *
- *   getMagic('a/b/c', 'jess', [function(dir, name, done){
- *     fs.readFile(dir+'/node_modules/'+name, function(e, src){
- *       if (e) done()
- *       else done(null, src)
- *     })
- *   }]).then(function(jess){
- *     console.log(jess.path, jess.text)
- *   })
- *
- * @param {String} base, the current director
- * @param {String} name, of the module we are looking for
- * @param {Array} resolvers, an array of functions to run at each base
- * @return {Promise} for a file object
- */
+module.exports = getFile
 
-exports.magic = function (base, name, resolvers) {
-	var dir = base
-	var promise = new Promise
-	
-	doWhile(
-		function (done) {
-			series(resolvers, function (checker, next) {
-				if (checker.length > 2) checker(dir, name, next)
-				else next(checker(dir, name))
-			}, function(file){
-				var cont = dir !== '/'
-				dir = dirname(dir)
-				done(file, cont)
-			})
-		},
-		function (file) {
-			if (file) {
-				debug('%s -> %s = %s', base, name, file.path)
-				promise.resolve(file)
-			} else {
-				debug('unable to resolve %s -> %s', base, name)
-				promise.reject(new Error('unable to resolve '+base+' -> '+name))
-			}
-		}
-	)
+// add protocol handlers
+getFile.http = getFile.https = getRemoteFile
+getFile.fs = getLocalFile
 
-	return promise
+// Retrive a file object
+// (String, String) -> Promise file
+function getFile(base, name){
+	var path = util.joinPath(base, name)
+	if (!path) return fromPackage.call(this, base, name)
+	var get = getFile[protocol(path)]
+	return first(this.completions(path).map(get))
 }
 
-/**
- * Retrieve a file from the internet
- *
- * @param {String} path
- * @return {Promise} for a file object
- */
+// determine an appropriate retreval protocol for `path`
+// (String) -> String
+function protocol(path){
+	if (/^\//.test(path)) return 'fs'
+	return (/^(\w+):\/\//).exec(path)[1]
+}
 
-exports.remote = function (path) {
-	var promise = new Promise
+// get a file from a package
+// (String, String) -> Promise file
+function fromPackage(dir, name){
+	if (util.isRemote(dir)) throw new Error('remote packages un-implemented')
+	var start = dir
+	var p = new Promise
+	var readers = this.fsReaders
+	doUntil(function(loop){
+		first(readers.map(function(read){
+			return read(dir, name)
+		})).then(loop, function(){
+			var cwd = dir
+			dir = path.dirname(dir)
+			loop(cwd == '/')
+		})
+	}, done)
+	function done(file){
+		if (typeof file == 'object') p.fulfill(file)
+		else p.reject(new Error('unable to resolve '+name+' from '+start))
+	}
+	return p
+}
+
+// Retrieve a file from the internet
+// (String) -> Promise file
+function getRemoteFile(path){
+	var p = new Promise
 	debug('Remote requesting %s', path)
 	request.get(path).buffer().end(function (res) {
 		debug('Response %s => %d', path, res.status)
-		if (!res.ok) {
-			promise.reject(res.error)
-		} else {
-			promise.resolve({
-				'path': path,
-				'text': res.text,
-				'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
-			})
-		} 
+		if (!res.ok) return p.reject(res.error)
+		p.resolve({
+			'path': path,
+			'text': res.text,
+			'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
+		})
 	})
-	return promise
+	return p
 }
 
-/**
- * Retrive a file from the local file system
- *
- * @param {String} path, absolute
- * @return {Promise} for a file object
- */
-
-exports.local = function (path) {
-	var promise = new Promise
+// Retrive a file from the local file system
+// (String) -> Promise file
+function getLocalFile(path) {
+	var p = new Promise
 	fs.stat(path, function (e, stat) {
-		if (e) {
-			debug('Local file %s doesn\'t exist', path)
-			return promise.reject(e)
-		}
+		if (e) return p.reject(e)
 		fs.readFile(path, 'utf-8', function (e, txt) {
-			if (e) return promise.reject(e), debug('Problem reading %s', path)
-			promise.resolve({
+			if (e) return p.reject(e)
+			p.resolve({
 				'path': path,
 				'text': txt,
 				'last-modified': +stat.mtime
 			})
-			debug('Local resolved: %s', path)
 		})
 	})
-	return promise
+	return p
 }

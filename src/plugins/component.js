@@ -1,4 +1,4 @@
-var readFile = require('../../file').local
+var readFile = require('../file').local
   , join = require('path').join
   , fs = require('fs')
 
@@ -71,7 +71,7 @@ exports.types = [
 	SudoComponent
 ]
 
-var JS = require('../javascript').types[0]
+var JS = require('./javascript').types[0]
 
 function SudoComponent (file) {
 	this.path = file.path

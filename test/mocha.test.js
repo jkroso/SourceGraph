@@ -1,33 +1,13 @@
 var fs = require('fs')
-  , read = fs.readFileSync
   , path = require('path')
   , resolve = path.resolve
   , should = require('chai').should()
   , expect = require('chai').expect
-  , Graph = require('../src')
+  , Graph = require('..')
+  , run = require('./utils').run
+  , read = require('./utils').read
 
 var graph
-
-/**
- * Helper for checking graphs creating graphs and checking 
- * they contain what they should
- *
- * @param {Array} files, the first path should be the entry file
- * @param {Number} sudos the number of sudo files you expect to of been created
- * @return {Promise} for completion
- */
-
-function trace (files, sudos) {
-	return graph.trace(files[0]).then(function(data) {
-		data.should.have.a.lengthOf(files.length + (sudos || 0))
-		files.forEach(function (path) {
-			data.should.have.property(path)
-				.and.property('text', read(path, 'utf-8'))
-		})
-		return data
-	})
-}
-
 var root = resolve(__dirname, './fixtures/node/test-suite')+'/'
 var top = resolve(__dirname, '..')
 
@@ -35,13 +15,13 @@ describe('mocha plugin', function () {
 	it('can load the plugin', function () {
 		var g = new Graph
 		g.use('mocha')
-		g._osResolvers.should.have.a.lengthOf(0)
-		g._hashResolvers.should.have.a.lengthOf(0)
-		g._types.should.have.a.lengthOf(1)
+		g.fsReaders.should.have.a.lengthOf(0)
+		g.hashReaders.should.have.a.lengthOf(0)
+		g.types.should.have.a.lengthOf(1)
 	})
 
 	beforeEach(function () {
-		graph = new Graph().use('mocha', 'javascript', 'nodeish')
+		graph = new Graph().use('mocha', 'nodeish')
 	})
 	
 	it('should use the pre-built version of mocha but pretend its the normal one', function (done) {
@@ -50,12 +30,10 @@ describe('mocha plugin', function () {
 			root+'test/index.test.js',
 			root+'src/index.js'
 		]
-		trace(files, 1)
-		.then(function (files) {
+		run(graph, files, 1).then(function (files) {
 			var built = top+'/node_modules/mocha/mocha.js'
 			files.should.have.property('/node_modules/mocha/index.js')
-				.and.property('text', read(built, 'utf-8')+'\nmodule.exports = mocha')
-		})
-		.nend(done)
+				.and.property('text', read(built)+'\nmodule.exports = mocha')
+		}).node(done)
 	})
 })

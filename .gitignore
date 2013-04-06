@@ -1,4 +1,4 @@
-*.sublime-*
-/colony
+/build
+/components
 /node_modules
-/node
+/test/built.js
