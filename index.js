@@ -79,7 +79,7 @@ Graph.prototype.use = function () {
 	for (var i = 0, len = arguments.length; i < len; i++) {
 		var name = arguments[i]
 		var plug = require(__dirname+'/src/plugins/'+name)
-		debug('plugin %s provides: %pj', name, Object.keys(plug))
+		debug('plugin %s provides: %j', name, Object.keys(plug))
 
 		if (plug.fileSystem) {
 			assertFn(plug.hashSystem)

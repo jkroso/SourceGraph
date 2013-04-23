@@ -68,7 +68,9 @@ function trace(graph, module){
 	return all(deps.map(function(path){
 		debug('#%d fetching: %s -> %s', module.id, module.base, path)
 		return getfile.call(graph, module.base, path)
-			.then(addFile.bind(null, graph))
+			.then(addFile.bind(null, graph), function(e){
+				throw new Error('unable to get '+module.base+' -> '+path)
+			})
 			.then(function(child){
 				if (!child) return
 				relate(module, child)
@@ -103,7 +105,7 @@ function modulize(file, types){
 	module.lastModified = file['last-modified'] || Date.now()
 	module.requires = unique(module.requires())
 	debug('#%d = %s', id, module.path)
-	debug('#%d dependencies: %pj', id, module.requires)	
+	debug('#%d dependencies: %j', id, module.requires)	
 	module.id = id++
 	return module
 }
