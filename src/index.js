@@ -32,7 +32,9 @@ Graph.prototype.getFile = getfile
 Graph.prototype.add = function(path){
 	var self = this
 	return this.getFile(process.cwd(), path)
-		.then(addFile.bind(null, this))
+		.then(addFile.bind(null, this), function(){ 
+			throw new Error('unable to get '+path)
+		})
 		.then(trace.bind(null, this))
 		.then(function(){ return self.graph }) 
 }
