@@ -2,7 +2,7 @@
 var fs = require('fs')
   , path = require('path')
   , util = require('./utils')
-  , Promise = require('laissez-faire')
+  , Promise = require('laissez-faire/full')
   , request = require('superagent')
   , doUntil = require('async-loop').doUntil
   , first = require('when-first/series')
