@@ -50,7 +50,9 @@ Graph.prototype.add = function(path){
 			throw new Error('unable to get '+path)
 		})
 		.then(trace.bind(null, this))
-		.then(function(){ return self.graph }) 
+		.then(function(){
+			return self.graph
+		}) 
 }
 
 /**
@@ -66,6 +68,8 @@ function addFile(graph, file){
 	if (existing) {
 		if (file.alias) {
 			existing.aliases.push(file.alias)
+			// register it
+			graph.graph[file.alias] = existing
 			debug('alias %p -> %p', file.alias, file.path)
 		} else {
 			debug('received existing file: %p', file.path)

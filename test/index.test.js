@@ -112,7 +112,7 @@ describe('symlinks', function () {
 	var linked = __dirname+'/fixtures/node/expandsingle/node_modules/foo.js'
 	it('should follow the link but register the alias', function (done) {
 		graph.add(dir+'/index.js').then(function(files){
-			files.should.have.keys([
+			files.should.include.keys([
 				dir+'/index.js',
 				linked
 			])
@@ -123,7 +123,7 @@ describe('symlinks', function () {
 
 	it('should be able to collect several aliases', function (done) {
 		graph.add(dir+'/multi.js').then(function(files){
-			files.should.have.keys([
+			files.should.include.keys([
 				dir+'/multi.js',
 				linked
 			])
