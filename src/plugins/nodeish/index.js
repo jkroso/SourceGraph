@@ -88,27 +88,16 @@ exports.fileSystem = function(dir, name){
  */
 
 exports.hashSystem = function (dir, name, hash) {
-	var match = variants(dir, name).filter(function (p) {
-		return p in hash
-	})
-
-	if (match.length) {
-		if (match.length > 1) 
-			console.warn('%s -> %s has several matches', dir, name)
-		return match[0]
-	}
-
-	// core modules
-	if (dir.lastIndexOf('/') <= 0 && hash[dir+'/'+name+'.js']) {
-		return dir+'/'+name+'.js'
-	}
+	return variants(dir, name).filter(function (path) {
+		return path in hash
+	})[0]
 }
 
-exports.types = [
-	NodePackage,
-	require('../javascript').types[0],
-	require('../json').types[0]
-]
+exports.types = [ NodePackage ]
+	.concat(require('../javascript').types)
+	.concat(require('../json').types)
+
+exports.variants = variants
 
 /**
  * Handler for package.json files
