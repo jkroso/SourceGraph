@@ -8,6 +8,6 @@
 /Makefile
 /examples
 /dist
-/component.json
+/example
 *.sublime-project
 *.sublime-workspace
