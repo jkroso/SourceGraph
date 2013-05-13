@@ -8,6 +8,7 @@
     "when-all": "http://github.com/jkroso/when-all/tarball/0.3.0",
     "when": "http://github.com/jkroso/when/tarball/1.0.0",
     "winner": "http://github.com/jkroso/winner/tarball/0.3.2",
+    "detect": "http://github.com/jkroso/detect/tarball/0.2.0",
     "unique": "http://github.com/jkroso/unique/archive/master.tar.gz",
     "find": "http://github.com/component/find/archive/master.tar.gz",
     "prettyjson": "~0.8.1",
@@ -18,7 +19,7 @@
   },
   "devDependencies": {
     "mocha": "*",
-    "chai": "*"
+    "chai": "~1.6.0"
   },
   "bundledDependencies": [
     "unique",

@@ -62,11 +62,17 @@ Graph.prototype.add = function(path){
  */
 
 function addFile(graph, file){
-	debug('Received: %p', file.path)
-	if (graph.graph[file.path]) {
-		return debug('Its been beaten by another request though')
+	var existing = graph.graph[file.path]
+	if (existing) {
+		if (file.alias) {
+			existing.aliases.push(file.alias)
+			debug('alias %p -> %p', file.alias, file.path)
+		} else {
+			debug('received existing file: %p', file.path)
+		}
+		return 
 	}
-	if (!file.path)console.trace();
+	debug('Received: %p', file.path)
 	var module = modulize(file, graph.types)
 	graph.graph[module.path] = module
 	return module
@@ -132,6 +138,8 @@ function modulize(file, types){
 	var name = module.path
 	module.parents = []
 	module.children = []
+	module.aliases = []
+	if (file.alias) module.aliases.push(file.alias)
 	module.base = path.dirname(name)
 	module.ext = path.extname(name)
 	module.name = path.basename(name, module.ext)

@@ -1,7 +1,9 @@
 
 var fs = require('fs')
   , path = require('path')
+  , resolve = path.resolve
   , join = path.join
+  , dirname = path.dirname
   , util = require('./utils')
   , Promise = require('laissez-faire/full')
   , request = require('superagent')
@@ -70,7 +72,8 @@ function fromPackage(dir, name){
 	}
 
 	function fulfill(file){
-		p.fulfill(file)
+		if (typeof file == 'object') p.fulfill(file)
+		else getLocalFile(file).then(fulfill, reject)
 	}
 
 	function reject(){
@@ -119,7 +122,7 @@ function getRemoteFile(path){
 	request.get(path).buffer().end(function (res) {
 		debug('Response %s => %d', path, res.status)
 		if (!res.ok) return p.reject(res.error)
-		p.resolve({
+		p.fulfill({
 			'path': path,
 			'text': res.text,
 			'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
@@ -137,15 +140,21 @@ function getRemoteFile(path){
 
 function getLocalFile(path) {
 	var p = new Promise
-	fs.stat(path, function (e, stat) {
+	fs.lstat(path, function (e, stat) {
 		if (e) return p.reject(e)
 		fs.readFile(path, 'utf-8', function (e, txt) {
 			if (e) return p.reject(e)
-			p.resolve({
+			var file = {
 				'path': path,
 				'text': txt,
 				'last-modified': +stat.mtime
-			})
+			}
+			if (stat.isSymbolicLink()) {
+				file.alias = path
+				file.path = resolve(dirname(path), fs.readlinkSync(path))
+				file['last-modified'] = +fs.statSync(path).mtime
+			}
+			p.fulfill(file)
 		})
 	})
 	return p

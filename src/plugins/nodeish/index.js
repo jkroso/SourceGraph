@@ -56,7 +56,7 @@ function variants (dir, path) {
  *
  * @param {String} dir
  * @param {String} name
- * @param {Function} done to pass results to when ready
+ * @return {Promise} path|file
  */
 
 exports.fileSystem = function(dir, name){
@@ -64,7 +64,7 @@ exports.fileSystem = function(dir, name){
 		fs.stat(path, function(err, stat){
 			cb(!err && stat.isFile())
 		})
-	}).then(readFile, function(reason){
+	}).then(null, function(reason){
 		// is top level directory
 		if (dir.lastIndexOf('/') <= 0 && core[name+'.js']) {
 			return readFile(base + name + '.js').then(function (file) {
@@ -138,11 +138,3 @@ NodePackage.prototype.requires = function () {
 	}
 	return deps
 }
-
-/*!
- * Expose the variants function and base path for others to use
- * For example bigfile uses them in its development builds
- */
-
-exports.variants = variants
-exports.basePath = base

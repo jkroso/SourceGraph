@@ -106,6 +106,17 @@ describe('Loading with protocols (e.g. http:)', function () {
 	})
 })
 
-describe('retain symlink data', function () {
-	
+describe('symlink', function () {
+	var dir = __dirname+'/fixtures/symlinks'
+	var linked = __dirname+'/fixtures/node/expandsingle/node_modules/foo.js'
+	it('should follow the link but register the alias', function (done) {
+		graph.add(dir+'/index.js').then(function(files){
+			files.should.have.keys([
+				dir+'/index.js',
+				linked
+			])
+			files[linked].should.have.property('aliases')
+				.and.deep.equal([dir+'/sym.js'])
+		}).node(done)
+	})
 })
