@@ -99,8 +99,8 @@ exports.hashSystem = function (dir, name, hash) {
 	}
 
 	// core modules
-	if (dir === '/' && hash['/node_modules/'+name+'.js']) {
-		return '/node_modules/'+name+'.js'
+	if (dir.lastIndexOf('/') <= 0 && hash[dir+'/'+name+'.js']) {
+		return dir+'/'+name+'.js'
 	}
 }
 
@@ -136,60 +136,6 @@ NodePackage.prototype.requires = function () {
 		if (main.match(/^\w/)) main = './'+main
 		deps.push(main)
 	}
-	return deps
-}
-
-/**
- * Extract dependency info from component.json files.
- * 
- * [components](github.com/component/component) are typically straight
- * forward to use from node style code but if they include css or images 
- * its unlikely they will be required anywhere other that in the `.json`
- *
- * To use a component from node style code you should 
- * `require('foo/component.json')` rather than simply `require('foo')`
- */
-
-function Component (file) {
-	this.path = file.path
-	this.text = file.text
-}
-
-Component.test = function (file) {
-	if (file.path.match(/\/component\.json$/)) {
-		return 2
-	}
-}
-
-Component.prototype.requires = function () {
-	var data = JSON.parse(this.text)
-	  , deps = []
-	  , base = this.base
-
-	data.dependencies && Object.keys(data.dependencies).forEach(function (dep) {
-		// only interested in the components name since 
-		// we are pretending this is a npm package
-		deps.push(dep.split('/')[1])
-	})
-
-	// js files
-	if (data.scripts) {
-		if (!(data.scripts instanceof Array)) throw new Error('Scripts should be an array')
-		data.scripts.forEach(function (path) {
-			// paths are always relative but they may not be written that way
-			if (path.match(/^\w/)) path = './'+path
-			deps.push(path)
-		})
-	}
-
-	// css files
-	data.styles && data.styles.forEach(function (path) {
-		if (path.match(/^\w/)) path = './'+path
-		deps.push(path)
-	})
-
-	// TODO: templates
-
 	return deps
 }
 

@@ -11,7 +11,7 @@ function read(path){
 var graph
 // prepare the graph for standard behaviour.
 beforeEach(function () {
-	graph = new Graph().use('nodeish', 'component', 'javascript', 'json', 'css')
+	graph = new Graph().use('nodeish', 'css')
 })
 
 describe('add(path)', function () {
