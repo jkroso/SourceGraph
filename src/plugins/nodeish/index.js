@@ -44,7 +44,7 @@ function variants (dir, path) {
 	}
 
 	return path.map(function (name) {
-		return join(dir, 'node_modules', name)
+		return join(dir, name)
 	})
 }
 
@@ -60,20 +60,20 @@ function variants (dir, path) {
  */
 
 exports.fileSystem = function(dir, name){
-	return detect(variants(dir, name), function(path, cb){
+	return detect(variants(dir, name), function(path, i, cb){
 		fs.stat(path, function(err, stat){
 			cb(!err && stat.isFile())
 		})
 	}).then(readFile, function(reason){
-		// node core
-		if (dir === '/' && core[name+'.js']) {
-			return readFile(base+name+'.js').then(function (file) {
-				// Pretend the file came from a global node_modules directory
-				file.path = '/node_modules/'+name+'.js'
+		// is top level directory
+		if (dir.lastIndexOf('/') <= 0 && core[name+'.js']) {
+			return readFile(base + name + '.js').then(function (file) {
+				// Pretend the file came from the global directory
+				file.path = dir + '/' + name + '.js'
 				return file
 			})
 		}
-		reason.message = 'unable to find ' + dir + ' -> ' + name
+		reason.message = 'unable to find ' + dir + '/' + name
 		throw reason
 	})
 }
@@ -105,7 +105,6 @@ exports.hashSystem = function (dir, name, hash) {
 }
 
 exports.types = [
-	Component,
 	NodePackage,
 	require('../javascript').types[0],
 	require('../json').types[0]

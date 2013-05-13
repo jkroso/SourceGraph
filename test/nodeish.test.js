@@ -16,7 +16,7 @@ function read(path){
 
 describe('hashSystem', function () {
 	it('should return a full path', function () {
-		expect(node.hashSystem('a', 'foo', {
+		expect(node.hashSystem('a/node_modules', 'foo', {
 			"a/node_modules/foo.js": {}
 		})).to.equal('a/node_modules/foo.js')
 	})
@@ -28,7 +28,7 @@ describe('node modules magic', function () {
 		g.use('nodeish')
 		g.fsReaders.should.have.a.lengthOf(1)
 		g.hashReaders.should.have.a.lengthOf(1)
-		g.types.should.have.a.lengthOf(4)
+		g.types.should.have.a.lengthOf(3)
 	})
 
 	beforeEach(function () {
@@ -116,18 +116,6 @@ describe('node modules magic', function () {
 			dir+'pair-a.js',
 			dir+'pair-b.js',
 			dir+'pair-c.js'
-		]
-		run(graph, files).node(done)
-	})
-
-	it.skip('should handle component.json files which include styles', function (done) {
-		var dir = base + '/with-component/'
-		var files = [
-			dir+'index.js',
-			dir+'node_modules/overlay/component.json',
-			dir+'node_modules/overlay/index.js',
-			dir+'node_modules/overlay/overlay.css',
-			dir+'node_modules/emitter.js'
 		]
 		run(graph, files).node(done)
 	})

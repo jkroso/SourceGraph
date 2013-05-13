@@ -1,7 +1,0 @@
-{
-	"name": "withdep",
-	"dependencies": {
-		"component/inherit": "*"
-	},
-	"scripts":["index.js"]
-}

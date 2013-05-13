@@ -2,9 +2,6 @@
 var path = require('path')
   , url = require('url')
 
-// is `path` of `type`
-// (String) -> Boolean
-
 function isRelative(path){
 	return (/^\./).test(path)
 }
@@ -17,8 +14,11 @@ function isRemote(path){
 	return (/^[a-zA-Z]+:\/\//).test(path)
 }
 
-// attempt to join `base` and `req` if safe to do so
-// (String, String) -> String?
+/**
+ * attempt to join `base` and `req` if safe to do so
+ * (String, String) -> String?
+ */
+
 exports.joinPath = function(base, req){
 	if (isRelative(req)) {
 		return isRemote(base)
