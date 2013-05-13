@@ -105,3 +105,7 @@ describe('Loading with protocols (e.g. http:)', function () {
 		}).node(done)
 	})
 })
+
+describe('retain symlink data', function () {
+	
+})
