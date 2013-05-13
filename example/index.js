@@ -1,6 +1,5 @@
 
 var Graph = require('..')
-  , prettyjson = require('prettyjson').render
 
 /*!
  * The main file of the program
@@ -24,5 +23,5 @@ new Graph()
 				return path.replace(dirRegex, '')
 			})
 		})
-		console.log(prettyjson(files))
+		console.log(JSON.stringify(files, null, 2))
 	})
