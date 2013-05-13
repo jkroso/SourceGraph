@@ -5,6 +5,7 @@ var program = require('commander')
   , path = require('path')
   , fs = require('fs')
   , all = require('when-all')
+  , unique = require('unique')
   , debug = require('debug')('sourcegraph:cli')
 
 require('colors')
@@ -80,13 +81,12 @@ all(pending).then(function(files){
 
 	// print
 	if (program.listFiles) {
-		if (program.beautify) write(require('prettyjson').render(paths))
+		if (program.beautify) write(JSON.stringify(paths, null, 2))
 		else write(JSON.stringify(paths, null, 2))
 	} else {
 		// to array
 		files = paths.map(function(path){ return files[path] })
-		if (program.beautify) write(require('prettyjson').render(files))
-		else write(JSON.stringify(files, null, 2))
+		write(JSON.stringify(unique(files), null, 2))
 	}
 
 	write('\n')

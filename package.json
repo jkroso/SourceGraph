@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.6.4",
+  "version": "0.7.0",
   "dependencies": {
     "laissez-faire": "~0.12.2",
     "debug": "http://github.com/jkroso/debug/tarball/master",
@@ -11,7 +11,6 @@
     "detect": "http://github.com/jkroso/detect/tarball/0.2.0",
     "unique": "http://github.com/jkroso/unique/archive/master.tar.gz",
     "find": "http://github.com/component/find/archive/master.tar.gz",
-    "prettyjson": "~0.8.1",
     "detective": "~2.1.1",
     "superagent": "~0.14.1",
     "colors": "~0.6.0-1",
