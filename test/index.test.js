@@ -87,12 +87,13 @@ it('can define custom handlers', function(done) {
 		}).node(done)
 })
 
-it('should not include files it has no match for', function (done) {
+it('should not fail on files it doesn\'t have a type for', function (done) {
 	var p = __dirname + '/fixtures/non_js/example.rndom'
 	graph.add(p).then(function (data) {
 		should.exist(data)
-		data.should.have.a.lengthOf(0)
-	}).otherwise(function(){ done() })
+		data.should.have.property(p)
+			.and.have.property('requires').and.eql([])
+	}).node(done)
 })
 
 describe('Loading with protocols (e.g. http:)', function () {
@@ -106,7 +107,7 @@ describe('Loading with protocols (e.g. http:)', function () {
 	})
 })
 
-describe('symlink', function () {
+describe('symlinks', function () {
 	var dir = __dirname+'/fixtures/symlinks'
 	var linked = __dirname+'/fixtures/node/expandsingle/node_modules/foo.js'
 	it('should follow the link but register the alias', function (done) {
@@ -117,6 +118,17 @@ describe('symlink', function () {
 			])
 			files[linked].should.have.property('aliases')
 				.and.deep.equal([dir+'/sym.js'])
+		}).node(done)
+	})
+
+	it('should be able to collect several aliases', function (done) {
+		graph.add(dir+'/multi.js').then(function(files){
+			files.should.have.keys([
+				dir+'/multi.js',
+				linked
+			])
+			files[linked].should.have.property('aliases')
+				.and.deep.equal([dir+'/sym.js', dir+'/sym2.js'])
 		}).node(done)
 	})
 })

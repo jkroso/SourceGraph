@@ -133,8 +133,12 @@ function modulize(file, types){
 	var Type = winner(types, function (type) {
 		return type.test(file) || 0
 	}, 1)
-	if (!Type) throw new Error('no module type for '+file.path)
-	var module = new Type(file)
+	if (Type) {
+		var module = new Type(file)
+	} else {
+		var module = file
+		debug('no module type for '+file.path)
+	}
 	var name = module.path
 	module.parents = []
 	module.children = []
@@ -146,7 +150,7 @@ function modulize(file, types){
 	// Remove the dot
 	module.ext = module.ext.replace(/^\./, '')
 	module.lastModified = file['last-modified'] || Date.now()
-	module.requires = unique(module.requires())
+	module.requires = Type ? unique(module.requires()) : []
 	debug('#%d = %p', id, module.path)
 	debug('#%d dependencies: %j', id, module.requires)	
 	module.id = id++
