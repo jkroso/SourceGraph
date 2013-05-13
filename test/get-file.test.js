@@ -51,7 +51,7 @@ describe('getFile(base, path)', function () {
 	})
 
 	it('should not fetch an absolute local path from a url base', function (done) {
-		var path = __dirname+'/node_modules/package/index.js'
+		var path = __dirname+'/get-file.test.js'
 		graph.getFile(jqHost, path).then(function (file) {
 			file.should.have.property('path', path)
 			file.should.have.property('text', read(path))
@@ -60,8 +60,9 @@ describe('getFile(base, path)', function () {
 	
 	it('should resolve a node package from a local base', function (done) {
 		graph.use('nodeish')
-		graph.getFile(__dirname, 'file.js').then(function (file) {
-			var path = __dirname+'/node_modules/file.js'
+		var dir = __dirname+'/fixtures/node/expandsingle'
+		graph.getFile(dir, 'foo.js').then(function (file) {
+			var path = dir+'/node_modules/foo.js'
 			file.should.have.property('path', path)
 			file.should.have.property('text', read(path))
 		}).node(done)

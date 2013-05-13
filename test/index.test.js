@@ -9,7 +9,6 @@ function read(path){
 }
 
 var graph
-// prepare the graph for standard behaviour.
 beforeEach(function () {
 	graph = new Graph().use('nodeish', 'css')
 })
@@ -22,7 +21,6 @@ describe('add(path)', function () {
 	it('will simply fetch the file and include it', function (done) {
 		graph.add(p1).then(function (files) {
 			Object.keys(files).should.have.a.lengthOf(1)
-			debugger;
 			files[p1].text.should.equal(read(p1))
 		}).node(done)
 	})
