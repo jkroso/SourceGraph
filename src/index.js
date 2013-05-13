@@ -28,14 +28,19 @@ function Graph () {
 
 /**
  * get a file from where-ever
- * (Graph, String, String) -> Promise file
+ * 
+ * @param {String} base
+ * @param {String} path
+ * @return {Object} file
  */
 
 Graph.prototype.getFile = getfile
 
 /**
- * add a file and it dependencies to `this`
- * (Graph, String) -> Promise
+ * add a file and it dependencies to `this` graph
+ * 
+ * @param {String} path
+ * @return {Promise} graph
  */
 
 Graph.prototype.add = function(path){
@@ -50,7 +55,10 @@ Graph.prototype.add = function(path){
 
 /**
  * add a module to the graph
- * (Graph, Object) -> Module
+ * 
+ * @param {Graph} graph
+ * @param {Object} file
+ * @return {Module}
  */
 
 function addFile(graph, file){
@@ -68,7 +76,9 @@ function addFile(graph, file){
  * recursively add the dependencies of `module`
  * to `graph`
  * 
- * (Graph, Module) -> Promise
+ * @param {Graph} graph
+ * @param {Module} module
+ * @return {Promise} null
  */
 
 function trace(graph, module){
@@ -107,7 +117,10 @@ function relate(parent, child){
 
 /**
  * Convert a file object into a Module
- * (Object, Array) -> Module
+ *
+ * @param {Object} file
+ * @param {Array} types
+ * @return {Module}
  */
 
 function modulize(file, types){
@@ -136,7 +149,9 @@ function modulize(file, types){
  * determine which file a `require(req)` from `dir` 
  * would result in. Only cached modules are considered
  * 
- * (Graph, String, String) -> String
+ * @param {String} dir
+ * @param {String} req
+ * @return {String} path
  */
 
 Graph.prototype.which = function(dir, req){
@@ -155,7 +170,7 @@ Graph.prototype.which = function(dir, req){
  * 
  * @param {String} dir
  * @param {String} req
- * @return {String}
+ * @return {String} paht
  */
 
 function whichPackage(dir, req){
@@ -175,7 +190,10 @@ function whichPackage(dir, req){
 
 /**
  * Retrieve the module stored within the sourcegraph
- * (Graph, String, String) -> Module
+ * 
+ * @param {String} base
+ * @param {String} path
+ * @return {Module}
  */
 
 Graph.prototype.get = function(base, path){
@@ -185,7 +203,10 @@ Graph.prototype.get = function(base, path){
 
 /**
  * Is the file already listed in the sourcegraph
- * (Graph, String, String) -> Boolean
+ * 
+ * @param {String} base
+ * @param {String} path
+ * @return {Boolean}
  */
 
 Graph.prototype.has = function(base, path){
@@ -197,7 +218,8 @@ Graph.prototype.has = function(base, path){
  * 
  *   graph.completions('path') => ['path.js', 'path/index.js']
  * 
- * (Graph, String) -> Array
+ * @param {String} path
+ * @return {Array} paths
  */
 
 Graph.prototype.completions = function(path){
