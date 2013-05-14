@@ -11,12 +11,12 @@ var program = require('commander')
 require('colors')
 
 program.version(require('../package').version)
-	.usage('[options] <entry files...> usually there is only one')
-	.option('-p, --plugins <plugins...>', 'A comma separated list of plugins', list)
+	.usage('[options] <entry files>')
+	.option('-p, --plugins <plugins>', 'A comma separated list of plugins', list, [])
 	.option('-b, --beautify', 'present the output for humans')
 	.option('-l, --list-files', 'list all files in the graph')
-	.option('-m, --menu', 'list available plugins')
 	.option('-d, debug', 'sourcegraph takes any of node\'s debug options')
+	.option('--menu', 'list available plugins')
 
 function list (args) {
 	return args.split(',')
@@ -30,34 +30,32 @@ program.on('--help', function () {
 	write('\n')
 })
 
-program.parse(process.argv)
+// --menu
 
-// display available plugins
-if (program.menu) (function(){
+program.on('menu', function(){
 	var list = fs.readdirSync(path.resolve(__dirname, '../src/plugins'))
 	console.log('')
-	console.log('  Available plugins: \n%s', render(list))
+	list.sort()
+		.map(function(file){
+			return file.replace(/\.js$/, '')
+		})
+		.forEach(function(item){
+			console.log('  '+item)
+		})
 	console.log('')
-
-	function removeExt (file) {
-		return file.replace(/\.js$/, '')
-	}
-	function render (list) {
-		return renderJSON(list.map(removeExt).sort()).replace(/^/gm, '    ')
-	}
 	process.exit(0)
-})()
+})
+
+program.parse(process.argv)
 
 var graph = new Graph
 
-if (!program.plugins) {
-	console.warn('You should probably specify at least one plugin')
-} else {
-	program.plugins.forEach(function (plugin) {
-		console.warn('Install plugin: %s'.blue, plugin)
-		graph.use(plugin)
-	})
-}
+// --plugins
+
+program.plugins.forEach(function (plugin) {
+	console.warn('Install plugin: %s'.blue, plugin)
+	graph.use(plugin)
+})
 
 if (!program.args) {
 	console.warn('You need to provide at least on entry file')
@@ -75,7 +73,7 @@ var pending = files.map(function(file){
 })
 
 all(pending).then(function(files){
-	// there all the same object so pick any one
+	// they are all the same object
 	files = files[0]
 	var paths = Object.keys(files)
 
