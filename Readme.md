@@ -9,12 +9,23 @@ _With npm_
 
 	$ npm install -g sourcegraph
 
+## Data format
+
+  the command line version of sourcegraph outputs a JSON array of file objects as its representation of your project. Each object contains the following infomation:
+
++ path: an absolute path
++ text: the files content
++ lastModified: timestamp
++ requires: raw dependency calls e.g. ["./dep1.jade", "dep2"]
++ parents: absolute paths to files depending on this one
++ children: requires expanded to their fully resolved paths
++ aliases: symlinks pointing to this file
 
 ## API
 
 ### command line
 
-	  Usage: sourcegraph.js [options] <entry files...> usually there is only one
+	  Usage: sourcegraph.js [options] <entry files...>
 		
 	  Options:
 		
