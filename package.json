@@ -2,7 +2,7 @@
   "name": "sourcegraph",
   "version": "0.7.0",
   "dependencies": {
-    "laissez-faire": "~0.12.2",
+    "laissez-faire": "~0.12.3",
     "debug": "http://github.com/jkroso/debug/tarball/master",
     "async-loop": "http://github.com/jkroso/async-loop/tarball/0.2.0",
     "when-all": "http://github.com/jkroso/when-all/tarball/0.3.0",
