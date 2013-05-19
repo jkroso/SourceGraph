@@ -57,9 +57,11 @@ program.plugins.forEach(function (plugin) {
 	graph.use(plugin)
 })
 
-if (!program.args) {
-	console.warn('You need to provide at least on entry file')
-	process.exit(0)
+if (!program.args.length) {
+	console.warn()
+	console.warn('  error: sourcegraph needs at least one file')
+	console.warn()
+	process.exit(1)
 }
 
 // Convert to absolute paths
