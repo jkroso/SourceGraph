@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "dependencies": {
     "laissez-faire": "~0.12.3",
     "debug": "http://github.com/jkroso/debug/tarball/master",
@@ -17,7 +17,7 @@
     "commander": "~1.1.1"
   },
   "devDependencies": {
-    "mocha": "*",
+    "mocha": "~1.9.0",
     "chai": "~1.6.0"
   },
   "bundledDependencies": [

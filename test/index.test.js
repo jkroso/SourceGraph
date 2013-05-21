@@ -128,7 +128,19 @@ describe('symlinks', function () {
 				linked
 			])
 			files[linked].should.have.property('aliases')
-				.and.deep.equal([dir+'/sym.js', dir+'/sym2.js'])
+				.and.include.members([dir+'/sym.js', dir+'/sym2.js'])
+		}).node(done)
+	})
+
+	it('should handle real files within fake directories', function (done) {
+		var entry = __dirname + '/fixtures/symlinks/simple.js'
+		var real1 = __dirname + '/fixtures/simple/index.js'
+		var alias = __dirname + '/fixtures/symlinks/simple/has_dependency.js'
+		var real2 = __dirname + '/fixtures/simple/has_dependency.js'
+		graph.add(entry).then(function (files) {
+			files.should.contain.keys([entry, real1, real2])
+			files.should.have.property(alias, files[real2])
+				.and.have.property('aliases').and.eql([alias])
 		}).node(done)
 	})
 })

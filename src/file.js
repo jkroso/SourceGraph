@@ -118,9 +118,9 @@ function find(array, ƒ){
 
 function getRemoteFile(path){
 	var p = new Promise
-	debug('Remote requesting %s', path)
+	debug('remote requesting %s', path)
 	request.get(path).buffer().end(function (res) {
-		debug('Response %s => %d', path, res.status)
+		debug('response %s => %d', path, res.status)
 		if (!res.ok) return p.reject(res.error)
 		p.fulfill({
 			'path': path,
@@ -140,21 +140,20 @@ function getRemoteFile(path){
 
 function getLocalFile(path) {
 	var p = new Promise
-	fs.lstat(path, function (e, stat) {
+	fs.realpath(path, function(e, real){
 		if (e) return p.reject(e)
-		fs.readFile(path, 'utf-8', function (e, txt) {
+		fs.stat(real, function(e, stat){
 			if (e) return p.reject(e)
-			var file = {
-				'path': path,
-				'text': txt,
-				'last-modified': +stat.mtime
-			}
-			if (stat.isSymbolicLink()) {
-				file.alias = path
-				file.path = resolve(dirname(path), fs.readlinkSync(path))
-				file['last-modified'] = +fs.statSync(path).mtime
-			}
-			p.fulfill(file)
+			fs.readFile(real, 'utf8', function(e, txt){
+				if (e) return p.reject(e)
+				var file = {
+					'path': real,
+					'text': txt,
+					'last-modified': +stat.mtime
+				}
+				if (real != path) file.alias = path
+				p.fulfill(file)
+			})
 		})
 	})
 	return p

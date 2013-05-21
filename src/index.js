@@ -56,30 +56,27 @@ Graph.prototype.add = function(path){
 }
 
 /**
- * add a module to the graph
+ * add a module and its aliases to the graph
  * 
  * @param {Graph} graph
  * @param {Object} file
- * @return {Module}
+ * @return {Module} if its new
  */
 
 function addFile(graph, file){
-	var existing = graph.graph[file.path]
-	if (existing) {
-		if (file.alias) {
-			existing.aliases.push(file.alias)
-			// register it
-			graph.graph[file.alias] = existing
-			debug('alias %p -> %p', file.alias, file.path)
-		} else {
-			debug('received existing file: %p', file.path)
-		}
-		return 
+	var module = graph.graph[file.path]
+	var isNew = !module
+	if (isNew) {
+		debug('received: %p', file.path)
+		module = modulize(file, graph.types)
+		graph.graph[module.path] = module
+	} 
+	if (file.alias) {
+		debug('alias: %p -> %p', file.alias, file.path)
+		module.aliases.push(file.alias)
+		graph.graph[file.alias] = module
 	}
-	debug('Received: %p', file.path)
-	var module = modulize(file, graph.types)
-	graph.graph[module.path] = module
-	return module
+	if (isNew) return module
 }
 
 /**
@@ -106,7 +103,7 @@ function trace(graph, module){
 	// promise to add all deps
 	return all(deps.map(function(path){
 		debug('#%d fetching: %p -> %p', module.id, module.base, path)
-		return getfile.call(graph, module.base, path)
+		return graph.getFile(module.base, path)
 			.then(addFile.bind(null, graph), function(e){
 				throw new Error('unable to get '+module.base+' -> '+path)
 			})
@@ -147,7 +144,6 @@ function modulize(file, types){
 	module.parents = []
 	module.children = []
 	module.aliases = []
-	if (file.alias) module.aliases.push(file.alias)
 	module.base = path.dirname(name)
 	module.ext = path.extname(name)
 	module.name = path.basename(name, module.ext)
