@@ -18,7 +18,7 @@ exports.types = [
  */
 
 function MochaJS (file) {
-	// Read the build file instead of the index file
+	// Read the built file instead of the index file
 	// Note the path to this module will remain index.js it just
 	// that we switch the contents of that file for that from their
 	// browser build
@@ -33,7 +33,8 @@ function MochaJS (file) {
 }
 
 MochaJS.test = function (file) {
-	if (file.path.match(/\/node_modules\/mocha\/index\.js$/)) return 10
+	if (/\/node_modules\/mocha\/index\.js$/.test(file.path)) return 10
+	if (/\/\.packin\/.*\/mocha\/tarball\/[^\/]+\/index\.js/.test(file.path)) return 10
 }
 
 MochaJS.prototype.requires = function () {
