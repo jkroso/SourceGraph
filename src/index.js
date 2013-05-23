@@ -6,7 +6,7 @@ var path = require('path')
   , winner = require('winner')
   , all = require('when-all')
   , unique = require('unique')
-  , find = require('find')
+  , find = require('detect')
   , debug = require('debug')('sourcegraph')
 
 module.exports = Graph
