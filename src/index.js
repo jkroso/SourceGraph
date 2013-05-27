@@ -241,3 +241,14 @@ Graph.prototype.completions = function(path){
 	}, [path])
 	return unique(paths)
 }
+
+/**
+ * remove all files so the graph can be rebuilt
+ * @return {this}
+ */
+
+Graph.prototype.clear = function(){
+	id = 1
+	this.graph = {}
+	return this
+}
