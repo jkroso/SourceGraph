@@ -46,10 +46,10 @@ Graph.prototype.getFile = getfile
 Graph.prototype.add = function(path){
 	var self = this
 	return this.getFile(process.cwd(), path)
-		.then(addFile.bind(null, this), function(){ 
+		.then(this.addFile.bind(this), function(){ 
 			throw new Error('unable to get '+path)
 		})
-		.then(trace.bind(null, this))
+		.then(this.trace.bind(this))
 		.then(function(){
 			return self.graph
 		}) 
@@ -58,60 +58,60 @@ Graph.prototype.add = function(path){
 /**
  * add a module and its aliases to the graph
  * 
- * @param {Graph} graph
  * @param {Object} file
  * @return {Module} if its new
  */
 
-function addFile(graph, file){
-	var module = graph.graph[file.path]
+Graph.prototype.addFile = function(file){
+	var module = this.graph[file.path]
 	var isNew = !module
 	if (isNew) {
 		debug('received: %p', file.path)
-		module = modulize(file, graph.types)
-		graph.graph[module.path] = module
+		module = modulize(file, this.types)
+		this.graph[module.path] = module
 	} 
 	if (file.alias) {
 		debug('alias: %p -> %p', file.alias, file.path)
 		module.aliases.push(file.alias)
-		graph.graph[file.alias] = module
+		this.graph[file.alias] = module
 	}
 	if (isNew) return module
 }
 
 /**
  * recursively add the dependencies of `module`
- * to `graph`
+ * to `this` graph
  * 
- * @param {Graph} graph
  * @param {Module} module
  * @return {Promise} null
  */
 
-function trace(graph, module){
+Graph.prototype.trace = function(module){
+	var self = this
 	var parted = util.partition(module.requires, function(dep){
 		return typeof dep == 'string'
 	})
+	var addFile = this.addFile.bind(this)
 	// add sudo files
-	parted[1].forEach(addFile.bind(null, graph))
+	parted[1].forEach(addFile)
 	// filter out existing deps
 	var deps = parted[0].filter(function(path){
-		var child = graph.get(module.base, path)
+		var child = self.get(module.base, path)
 		if (child) relate(module, child)
 		else return true
 	})
 	// promise to add all deps
 	return all(deps.map(function(path){
 		debug('#%d fetching: %p -> %p', module.id, module.base, path)
-		return graph.getFile(module.base, path)
-			.then(addFile.bind(null, graph), function(e){
+		return self.getFile(module.base, path)
+			.then(addFile, function(e){
 				throw new Error('unable to get '+module.base+' -> '+path)
 			})
 			.then(function(child){
 				if (!child) return
 				relate(module, child)
 				// recur
-				return trace(graph, child)
+				return self.trace(child)
 			})
 	}))
 }

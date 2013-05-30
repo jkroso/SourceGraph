@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "dependencies": {
     "laissez-faire": "~0.12.3",
     "debug": "http://github.com/jkroso/debug/tarball/master",

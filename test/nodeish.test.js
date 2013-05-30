@@ -119,6 +119,4 @@ describe('node modules magic', function () {
 		]
 		run(graph, files).node(done)
 	})
-	
-	it('should not include unused dependencies mentioned in package.json')
 })
