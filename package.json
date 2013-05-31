@@ -22,6 +22,10 @@
   "bundledDependencies": [
     "debug"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jkroso/sourcegraph.git"
+  },
   "bin": {
     "sourcegraph": "bin/sourcegraph",
     "sourcegraph.js": "bin/sourcegraph.js"
