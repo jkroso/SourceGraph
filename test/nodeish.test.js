@@ -1,20 +1,15 @@
 
-var fs = require('fs')
+var read = require('./utils').read
+  , run = require('./utils').run
+  , chai = require('./chai')
   , path = require('path')
   , resolve = path.resolve
-  , should = require('chai').should()
-  , expect = require('chai').expect
   , Graph = require('..')
-  , run = require('./utils').run
+  , fs = require('fs')
 
-var graph
 var node = require('../src/plugins/nodeish')
 
-function read(path){
-	return fs.readFileSync(path, 'utf-8').toString()
-}
-
-describe('hashSystem', function () {
+describe('hash system', function () {
 	it('should return a full path', function () {
 		expect(node.hashSystem('a/node_modules', 'foo', {
 			"a/node_modules/foo.js": {}
@@ -22,22 +17,14 @@ describe('hashSystem', function () {
 	})
 })
 
-describe('node modules magic', function () {
-	it('should load the plugin', function () {
-		var g = new Graph
-		g.use('nodeish')
-		g.fsReaders.should.have.a.lengthOf(1)
-		g.hashReaders.should.have.a.lengthOf(1)
-		g.types.should.have.a.lengthOf(3)
-	})
-
+describe('file system', function () {
+	var graph
+	var base = __dirname + '/fixtures/node'
 	beforeEach(function () {
 		graph = new Graph
 		graph.use('nodeish')
 		graph.use('css')
 	})
-
-	var base = __dirname + '/fixtures/node'
 
 	it('can include a simple npm package', function(done) {
 		var files = [
@@ -98,14 +85,14 @@ describe('node modules magic', function () {
 			base+'/core/node_modules/path.js'
 		]
 
-		run(graph, files, 1).node(done)	
+		run(graph, files, 2).node(done)	
 	})
 
 	it('should pretend core node modules are located in a global folder', function (done) {
-		var eventsPath = resolve(__dirname, '../src/plugins/nodeish/modules/events.js')
+		var core = require('browser-builtins')
 		graph.add(base+'/core/index.js').then(function(data) {
 			data.should.have.property('/node_modules/events.js')
-				.and.property('text', read(eventsPath))
+				.and.property('text', read(core.events))
 		}).node(done)
 	})
 
@@ -118,5 +105,17 @@ describe('node modules magic', function () {
 			dir+'pair-c.js'
 		]
 		run(graph, files).node(done)
+	})
+
+	it('built-in node modules', function(done){
+		graph.add(base + '/built-ins.js').then(function(data) {
+			data.should.include.keys(
+				'/node_modules/tty.js',
+				'/node_modules/assert.js',
+				'/node_modules/buffer.js',
+				'/node_modules/util.js',
+				'/node_modules/events.js'
+			)
+		}).node(done)
 	})
 })

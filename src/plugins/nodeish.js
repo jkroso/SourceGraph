@@ -1,17 +1,9 @@
 
 var detect = require('detect/series')
   , readFile = require('../../file').fs
+  , core = require('browser-builtins')
   , join = require('path').join
   , fs = require('fs')
-
-// Location of core node modules
-var base = __dirname + '/modules/'
-
-// Create a mapping of available core node modules
-var core = fs.readdirSync(base).reduce(function (acc, x) {
-	acc[x] = true
-	return acc
-}, {})
 
 /**
  * Produce an ordered list of paths to try
@@ -66,10 +58,10 @@ exports.fileSystem = function(dir, name){
 		})
 	}).then(null, function(reason){
 		// is top level directory
-		if (dir.lastIndexOf('/') <= 0 && core[name+'.js']) {
-			return readFile(base + name + '.js').then(function (file) {
+		if (dir.lastIndexOf('/') <= 0 && name in core) {
+			return readFile(core[name]).then(function (file) {
 				// Pretend the file came from the global directory
-				file.path = dir + '/' + name + '.js'
+				file.alias = dir + '/' + name + '.js'
 				return file
 			})
 		}
