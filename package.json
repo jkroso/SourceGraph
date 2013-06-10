@@ -1,9 +1,9 @@
 {
   "name": "sourcegraph",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "dependencies": {
-    "laissez-faire": "~0.12.3",
-    "debug": "http://github.com/jkroso/debug/tarball/master",
+    "laissez-faire": "~0.12.4",
+    "debug": "http://github.com/jkroso/debug/tarball/bb5a3e91475d83785768229f49a3730d60529423",
     "async-loop": "http://github.com/jkroso/async-loop/tarball/0.2.0",
     "when-all": "http://github.com/jkroso/when-all/tarball/0.3.0",
     "when": "http://github.com/jkroso/when/tarball/1.0.0",
@@ -11,27 +11,21 @@
     "detect": "http://github.com/jkroso/detect/tarball/0.2.0",
     "unique": "http://github.com/jkroso/unique/tarball/0.0.1",
     "detective": "~2.1.1",
-    "superagent": "~0.14.1",
+    "superagent": "~0.14.7",
     "colors": "~0.6.0-1",
     "commander": "~1.1.1",
-    "browser-builtins": "~1.0.1"
+    "browser-builtins": "1.0.1"
   },
   "devDependencies": {
-    "mocha": "~1.9.0",
-    "chai": "~1.6.0"
+    "mocha": "~1.10.0",
+    "chai": "~1.6.1"
   },
-  "bundledDependencies": [
-    "debug"
-  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/jkroso/sourcegraph.git"
   },
   "bin": {
     "sourcegraph": "bin/sourcegraph",
-    "sourcegraph.js": "bin/sourcegraph.js"
-  },
-  "scripts": {
-    "test": "make test"
+    "_sourcegraph": "bin/_sourcegraph"
   }
 }

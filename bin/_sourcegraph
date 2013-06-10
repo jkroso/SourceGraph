@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-var program = require('commander')
-  , Graph = require('..')
-  , path = require('path')
-  , fs = require('fs')
-  , all = require('when-all')
+var debug = require('debug')('sourcegraph:cli')
+  , program = require('commander')
   , unique = require('unique')
-  , debug = require('debug')('sourcegraph:cli')
+  , all = require('when-all')
+  , path = require('path')
+  , Graph = require('..')
+  , fs = require('fs')
 
 require('colors')
 
