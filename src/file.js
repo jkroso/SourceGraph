@@ -1,15 +1,15 @@
 
-var fs = require('fs')
+var Promise = require('laissez-faire/full')
+  , doUntil = require('async-loop').doUntil
+  , debug = require('debug')('getfile')
+  , request = require('superagent')
+  , when = require('when/read')
+  , util = require('./utils')
   , path = require('path')
   , resolve = path.resolve
-  , join = path.join
   , dirname = path.dirname
-  , util = require('./utils')
-  , Promise = require('laissez-faire/full')
-  , request = require('superagent')
-  , doUntil = require('async-loop').doUntil
-  , when = require('when/read')
-  , debug = require('debug')('getfile')
+  , fs = require('fs')
+  , join = path.join
 
 module.exports = getFile
 

@@ -1,13 +1,13 @@
 
-var path = require('path')
-  , url = require('url')
-  , util = require('./utils')
+var debug = require('debug')('sourcegraph')
   , getfile = require('./file')
   , winner = require('winner')
-  , all = require('when-all')
   , unique = require('unique')
+  , all = require('when-all')
+  , util = require('./utils')
   , find = require('detect')
-  , debug = require('debug')('sourcegraph')
+  , path = require('path')
+  , url = require('url')
 
 module.exports = Graph
 

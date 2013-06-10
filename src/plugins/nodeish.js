@@ -1,7 +1,7 @@
 
 var detect = require('detect/series')
-  , readFile = require('../../file').fs
   , core = require('browser-builtins')
+  , readFile = require('../file').fs
   , join = require('path').join
   , fs = require('fs')
 
@@ -86,8 +86,8 @@ exports.hashSystem = function (dir, name, hash) {
 }
 
 exports.types = [ NodePackage ]
-	.concat(require('../javascript').types)
-	.concat(require('../json').types)
+	.concat(require('./javascript').types)
+	.concat(require('./json').types)
 
 exports.variants = variants
 
