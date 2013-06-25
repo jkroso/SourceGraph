@@ -3,7 +3,7 @@ var detect = require('detect/series')
   , core = require('browser-builtins')
   , readFile = require('../file').fs
   , join = require('path').join
-  , fs = require('fs')
+  , fs = require('resultify/fs')
 
 /**
  * Produce an ordered list of paths to try
@@ -52,9 +52,11 @@ function variants (dir, path) {
  */
 
 exports.fileSystem = function(dir, name){
-	return detect(variants(dir, name), function(path, i, cb){
-		fs.stat(path, function(err, stat){
-			cb(!err && stat.isFile())
+	return detect(variants(dir, name), function(path){
+		return fs.stat(path).then(function(stat){
+			return stat.isFile()
+		}, function(){
+			return false
 		})
 	}).then(null, function(reason){
 		// is top level directory

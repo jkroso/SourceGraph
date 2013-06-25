@@ -1,24 +1,26 @@
 {
   "name": "sourcegraph",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "dependencies": {
-    "laissez-faire": "~0.12.4",
     "debug": "http://github.com/jkroso/debug/tarball/bb5a3e91475d83785768229f49a3730d60529423",
     "async-loop": "http://github.com/jkroso/async-loop/tarball/0.2.0",
-    "when-all": "http://github.com/jkroso/when-all/tarball/0.3.0",
-    "when": "http://github.com/jkroso/when/tarball/2.0.0",
     "winner": "http://github.com/jkroso/winner/tarball/0.3.2",
-    "detect": "http://github.com/jkroso/detect/tarball/0.2.0",
+    "detect": "http://github.com/jkroso/detect/tarball/0.3.2",
     "unique": "http://github.com/jkroso/unique/tarball/0.0.1",
-    "detective": "~2.1.1",
-    "superagent": "~0.14.7",
-    "colors": "~0.6.0-1",
-    "commander": "~1.1.1",
-    "browser-builtins": "1.0.1"
+    "when": "http://github.com/jkroso/when/tarball/3.2.2",
+    "browser-builtins": "1.0.2",
+    "superagent": "0.14.9",
+    "result-type": "1.0.0",
+    "detective": "2.1.1",
+    "commander": "1.2.0",
+    "resultify": "0.2.3",
+    "when-all": "0.4.3",
+    "colors": "0.6.0-1",
+    "result": "0.3.0"
   },
   "devDependencies": {
-    "mocha": "~1.10.0",
-    "chai": "~1.6.1"
+    "mocha": "1.11.0",
+    "chai": "1.7.0"
   },
   "repository": {
     "type": "git",
@@ -27,5 +29,8 @@
   "bin": {
     "sourcegraph": "bin/sourcegraph",
     "_sourcegraph": "bin/_sourcegraph"
+  },
+  "scripts": {
+    "install": "npm dedupe"
   }
 }

@@ -1,21 +1,15 @@
 
-var should = require('chai').should()
-  , expect = require('chai').expect
+var chai = require('./chai')
   , getFile = require('../src/file')
+  , read = require('./utils').read
   , path = require('path')
-  , all = require('when-all')
   , Graph = require('..')
   , fs = require('fs')
-
-function read(path){
-	return fs.readFileSync(path, 'utf-8').toString()
-}
 
 describe('getFile(base, path)', function () {
 	var jquery = 'http://code.jquery.com/jquery-1.8.0.js'
 	var localjq = __dirname+'/fixtures/jquery-1.8.0.js'
 	var jqHost = jquery.replace(/\/[^\/]*$/, '')
-	// var cachJQ = getFile.http(jquery)
 	var graph
 	beforeEach(function () {
 		graph = new Graph
@@ -23,7 +17,7 @@ describe('getFile(base, path)', function () {
 
 	it('should fetch a local file', function (done) {
 		var base = __dirname + '/fixtures/simple'
-		graph.getFile(base, './index.js').then(function (file) {
+		graph.getFile(base, './index.js').then(function(file){
 			file.should.have.property('path', base+'/index.js')
 			file.should.have.property('text', read(base+'/index.js'))
 		}).node(done)
@@ -55,7 +49,7 @@ describe('getFile(base, path)', function () {
 		graph.getFile(jqHost, path).then(function (file) {
 			file.should.have.property('path', path)
 			file.should.have.property('text', read(path))
-		}).otherwise(function(){ done() })
+		}).then(null, function(){ done() })
 	})
 	
 	it('should resolve a node package from a local base', function (done) {

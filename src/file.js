@@ -1,14 +1,16 @@
 
-var Promise = require('laissez-faire/full')
-  , doUntil = require('async-loop').doUntil
+var doUntil = require('async-loop').doUntil
   , debug = require('debug')('getfile')
+  , decorate = require('when/decorate')
+  , defer = require('result/defer')
   , request = require('superagent')
+  , fs = require('resultify/fs')
   , when = require('when/read')
+  , Result = require('result')
   , util = require('./utils')
   , path = require('path')
   , resolve = path.resolve
   , dirname = path.dirname
-  , fs = require('fs')
   , join = path.join
 
 module.exports = getFile
@@ -18,7 +20,7 @@ module.exports = getFile
  * 
  * @param {String} base
  * @param {String} name
- * @return {Promise} file
+ * @return {Result} file
  */
 
 function getFile(base, name){
@@ -49,38 +51,38 @@ getFile.fs = getLocalFile
  * 
  * @param {String} dir
  * @param {String} name
- * @return {Promise} file
+ * @return {Result} file
  */
 
 function fromPackage(dir, name){
 	if (util.isRemote(dir)) throw new Error('remote packages un-implemented')
-	var start = dir
-	var p = new Promise
 	var ns = this.packageDirectory
 	var readers = this.fsReaders
+	var result = new Result
+	var start = dir
 
 	doUntil(function(loop){
-		find(readers, readFile).then(fulfill, function(){
+		find(readers, readFile).then(write, function(){
 			var again = dir == '/'
 			dir = path.dirname(dir)
 			loop(again)
 		})
-	}, reject)
+	}, error)
 
 	function readFile(reader){
 		return reader(join(dir, ns), name)
 	}
 
-	function fulfill(file){
-		if (typeof file == 'object') p.fulfill(file)
-		else getLocalFile(file).then(fulfill, reject)
+	function write(file){
+		if (typeof file == 'object') result.write(file)
+		else getLocalFile(file).then(write, error)
 	}
 
-	function reject(){
-		p.reject(new Error('unable to resolve '+name+' from '+start))
+	function error(){
+		result.error(new Error('unable to resolve '+name+' from '+start))
 	}
 
-	return p
+	return result
 }
 
 /**
@@ -88,73 +90,63 @@ function fromPackage(dir, name){
  * 
  * @param {Array} array
  * @param {Function} ƒ
- * @return {Promise}
+ * @return {Result}
  */
 
 function find(array, ƒ){
-	var len = array.length
-	var i = 0
-	var p = new Promise
-	
-	function fulfill(value){
-		p.fulfill(value)
-	}
-	
-	function next(e){
-		if (i == len) p.reject(new Error('all failed: '+e.message))
-		else when(ƒ(array[i], i++), fulfill, next)
-	}
-	next()
-
-	return p
+	return defer(function(write, fail){
+		var len = array.length
+		var i = 0
+		function next(e){
+			if (i == len) fail(new Error('all failed: '+e.message))
+			else when(ƒ(array[i], i++), write, next)
+		}
+		next()
+	})
 }
 
 /**
  * Retrieve a file from the internet
  * 
  * @param {String} path
- * @return {Promise} file
+ * @return {Result} file
  */
 
 function getRemoteFile(path){
-	var p = new Promise
-	debug('remote requesting %s', path)
-	request.get(path).buffer().end(function (res) {
-		debug('response %s => %d', path, res.status)
-		if (!res.ok) return p.reject(res.error)
-		p.fulfill({
-			'path': path,
-			'text': res.text,
-			'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
+	return defer(function(write, fail){
+		debug('remote requesting %s', path)
+		request.get(path).buffer().end(function(res){
+			debug('response %s => %d', path, res.status)
+			if (!res.ok) fail(res.error)
+			else write({
+				'path': path,
+				'text': res.text,
+				'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
+			})
 		})
 	})
-	return p
 }
 
 /**
  * Retrive a file from the local file system
  * 
  * @param {String} path
- * @return {Promise} file
+ * @return {Result} file
  */
 
 function getLocalFile(path) {
-	var p = new Promise
-	fs.realpath(path, function(e, real){
-		if (e) return p.reject(e)
-		fs.stat(real, function(e, stat){
-			if (e) return p.reject(e)
-			fs.readFile(real, 'utf8', function(e, txt){
-				if (e) return p.reject(e)
-				var file = {
-					'path': real,
-					'text': txt,
-					'last-modified': +stat.mtime
-				}
-				if (real != path) file.alias = path
-				p.fulfill(file)
-			})
-		})
-	})
-	return p
+	var real = fs.realpath(path)
+	return new File(
+		real,
+		path,
+		fs.stat(real),
+		fs.readFile(real, 'utf8'))
 }
+
+var File = decorate(function(real, path, stat, text){
+	this.path = real
+	if (real != path) this.alias = path
+	this['last-modified'] = +stat.mtime
+	this.text = text
+	return this
+})
