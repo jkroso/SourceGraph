@@ -74,7 +74,7 @@ var pending = files.map(function(file){
 	return graph.add(file)
 })
 
-all(pending).then(function(files){
+all(pending).read(function(files){
 	// they are all the same object
 	files = files[0]
 	var paths = unique(Object.keys(files).map(function(path){
@@ -91,7 +91,7 @@ all(pending).then(function(files){
 	}
 
 	write('\n')
-}).throw()
+})
 
 function write(s){
 	process.stdout.write(s)
