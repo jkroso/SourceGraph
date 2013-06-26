@@ -26,15 +26,19 @@ function MochaJS (file) {
 	try {
 		this.text = fs.readFileSync(path.dirname(file.path) + '/mocha.js', 'utf-8')
 	} catch (e) {
-		throw new Error('Problem reading mocha\'s browser build')
+		throw new Error('Problem reading mocha\'s browser build: ' + file.path)
 	}
 	// The mocha browser build exports a global so we grab that
 	this.text +='\nmodule.exports = mocha'
 }
 
 MochaJS.test = function (file) {
-	if (/\/node_modules\/mocha\/index\.js$/.test(file.path)) return 10
-	if (/\/\.packin\/.*\/mocha\/tarball\/[^\/]+\/index\.js/.test(file.path)) return 10
+	var path = file.path
+	if (/\/node_modules\/mocha\/index\.js$/.test(path)
+	|| (/\/mocha-\d+\.\d+\.\d+\.tgz\/index.js/.test(path))
+	|| (/\/\.packin\/.*\/mocha\/tarball\/[^\/]+\/index\.js/.test(path))) {
+		return 10
+	}
 }
 
 MochaJS.prototype.requires = function () {
