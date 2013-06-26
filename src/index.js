@@ -1,9 +1,9 @@
 
 var debug = require('debug')('sourcegraph')
+  , each = require('foreach/async')
   , getfile = require('./file')
   , winner = require('winner')
   , unique = require('unique')
-  , all = require('when-all')
   , util = require('./utils')
   , find = require('detect')
   , path = require('path')
@@ -87,33 +87,40 @@ Graph.prototype.addFile = function(file){
  */
 
 Graph.prototype.trace = function(module){
-	var self = this
-	var parted = util.partition(module.requires, function(dep){
-		return typeof dep == 'string'
-	})
-	var addFile = this.addFile.bind(this)
-	// add sudo files
-	parted[1].forEach(addFile)
-	// filter out existing deps
-	var deps = parted[0].filter(function(path){
-		var child = self.get(module.base, path)
-		if (child) relate(module, child)
-		else return true
-	})
-	// promise to add all deps
-	return all(deps.map(function(path){
+	// sudo files
+	module.requires
+		.filter(isObject)
+		.forEach(this.addFile, this)
+
+	var newDeps = module.requires
+		.filter(isString)
+		.filter(function(path){
+			var child = this.get(module.base, path)
+			if (child) relate(module, child)
+			return !child
+		}, this)
+
+	return each(newDeps, function(path){
 		debug('#%d fetching: %p -> %p', module.id, module.base, path)
-		return self.getFile(module.base, path)
-			.then(addFile, function(e){
+		var self = this
+		return this.getFile(module.base, path)
+			.then(this.addFile.bind(this), function(e){
 				throw new Error('unable to get '+module.base+' -> '+path)
 			})
 			.then(function(child){
 				if (!child) return
 				relate(module, child)
-				// recur
 				return self.trace(child)
 			})
-	}))
+	}, this)
+}
+
+function isObject(x){
+	return typeof x == 'object'
+}
+
+function isString(x){
+	return typeof x == 'string'
 }
 
 // set parent child relationship
