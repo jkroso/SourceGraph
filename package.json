@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "dependencies": {
     "debug": "http://github.com/jkroso/debug/tarball/bb5a3e91475d83785768229f49a3730d60529423",
     "async-loop": "http://github.com/jkroso/async-loop/tarball/0.2.0",
