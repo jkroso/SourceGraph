@@ -1,32 +1,32 @@
 
 var read = require('./utils').read
-  , run = require('./utils').run
-  , chai = require('./chai')
-  , path = require('path')
-  , resolve = path.resolve
-  , Graph = require('..')
-  , fs = require('fs')
+var run = require('./utils').run
+var chai = require('./chai')
+var path = require('path')
+var resolve = path.resolve
+var Graph = require('..')
+var fs = require('fs')
 
 var node = require('../src/plugins/nodeish')
 
-describe('hash system', function () {
-	it('should return a full path', function () {
+describe('hash system', function(){
+	it('should return a full path', function(){
 		expect(node.hashSystem('a/node_modules', 'foo', {
 			"a/node_modules/foo.js": {}
 		})).to.equal('a/node_modules/foo.js')
 	})
 })
 
-describe('file system', function () {
+describe('file system', function(){
 	var graph
 	var base = __dirname + '/fixtures/node'
-	beforeEach(function () {
+	beforeEach(function(){
 		graph = new Graph
 		graph.use('nodeish')
 		graph.use('css')
 	})
 
-	it('can include a simple npm package', function(done) {
+	it('can include a simple npm package', function(done){
 		var files = [
 			base+'/expandsingle/index.js',
 			base+'/expandsingle/node_modules/foo.js'
@@ -34,7 +34,7 @@ describe('file system', function () {
 		run(graph, files).node(done)
 	})
 
-	it('even if it isn\'t relative but has a .js on the end', function (done) {
+	it('even if it isn\'t relative but has a .js on the end', function(done){
 		var files = [
 			base+'/with_extension/index.js',
 			base+'/with_extension/node_modules/foo.js'
@@ -42,7 +42,7 @@ describe('file system', function () {
 		run(graph, files).node(done)
 	})
 
-	it('can include a npm package folder from an index.js', function (done) {
+	it('can include a npm package folder from an index.js', function(done){
 		var files = [
 			base+'/expandindex/index.js',
 			base+'/expandindex/node_modules/foo/index.js'
@@ -67,7 +67,7 @@ describe('file system', function () {
 		]
 		run(graph, files).node(done)
 	})
-	
+
 	it('when deps are mixed', function(done) {
 		var files = [
 			base+'/mixed_deps/package.json',
@@ -78,17 +78,17 @@ describe('file system', function () {
 		]
 		run(graph, files).node(done)
 	})
-	
-	it('should resolve core modules with the lowest priority', function (done) {
+
+	it('should resolve core modules with the lowest priority', function(done){
 		var files = [
 			base+'/core/index.js',
 			base+'/core/node_modules/path.js'
 		]
 
-		run(graph, files, 2).node(done)	
+		run(graph, files, 2).node(done)
 	})
 
-	it('should pretend core node modules are located in a global folder', function (done) {
+	it('should pretend core node modules are located in a global folder', function(done){
 		var core = require('browser-builtins')
 		graph.add(base+'/core/index.js').then(function(data) {
 			data.should.have.property('/node_modules/events.js')
@@ -96,7 +96,7 @@ describe('file system', function () {
 		}).node(done)
 	})
 
-	it('should prevent duplicate dependencies being output', function (done) {
+	it('should prevent duplicate dependencies being output', function(done){
 		var dir = base + '/concurrent-requires/'
 		var files = [
 			dir+'index.js',

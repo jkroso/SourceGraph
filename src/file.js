@@ -1,23 +1,23 @@
 
+var debug = require('debug')('sourcegraph:getfile')
 var doUntil = require('async-loop').doUntil
-  , debug = require('debug')('getfile')
-  , decorate = require('when/decorate')
-  , defer = require('result/defer')
-  , request = require('superagent')
-  , fs = require('resultify/fs')
-  , when = require('when/read')
-  , Result = require('result')
-  , util = require('./utils')
-  , path = require('path')
-  , resolve = path.resolve
-  , dirname = path.dirname
-  , join = path.join
+var defer = require('result/defer')
+var request = require('superagent')
+var fs = require('resultify/fs')
+var when = require('when/read')
+var lift = require('when/lift')
+var Result = require('result')
+var util = require('./utils')
+var path = require('path')
+var resolve = path.resolve
+var dirname = path.dirname
+var join = path.join
 
 module.exports = getFile
 
 /**
  * retrieve a file
- * 
+ *
  * @param {String} base
  * @param {String} name
  * @return {Result} file
@@ -32,7 +32,7 @@ function getFile(base, name){
 
 /**
  * determine an appropriate retreval protocol for `path`
- * 
+ *
  * @param {String} path
  * @return {String}
  */
@@ -48,7 +48,7 @@ getFile.fs = getLocalFile
 
 /**
  * get a file from a package
- * 
+ *
  * @param {String} dir
  * @param {String} name
  * @return {Result} file
@@ -87,7 +87,7 @@ function fromPackage(dir, name){
 
 /**
  * look for a successful call of `ƒ`
- * 
+ *
  * @param {Array} array
  * @param {Function} ƒ
  * @return {Result}
@@ -107,7 +107,7 @@ function find(array, ƒ){
 
 /**
  * Retrieve a file from the internet
- * 
+ *
  * @param {String} path
  * @return {Result} file
  */
@@ -129,7 +129,7 @@ function getRemoteFile(path){
 
 /**
  * Retrive a file from the local file system
- * 
+ *
  * @param {String} path
  * @return {Result} file
  */
@@ -143,7 +143,7 @@ function getLocalFile(path) {
 		fs.readFile(real, 'utf8'))
 }
 
-var File = decorate(function(real, path, stat, text){
+var File = lift(function(real, path, stat, text){
 	this.path = real
 	if (real != path) this.alias = path
 	this['last-modified'] = +stat.mtime

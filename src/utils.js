@@ -1,6 +1,6 @@
 
 var path = require('path')
-  , url = require('url')
+var url = require('url')
 
 function isRelative(path){
 	return (/^\./).test(path)

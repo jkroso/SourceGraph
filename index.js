@@ -1,13 +1,9 @@
 
-var Graph = require('./src/index')
-  , unique = require('unique')
-  , debug = require('debug')('sourcegraph:config')
+var debug = require('debug')('sourcegraph:config')
+var Graph = require('./src/graph')
+var unique = require('unique')
 
 module.exports = Graph
-
-///////////////////////////
-// add configuration api //
-///////////////////////////
 
 /**
  * Add package resolver that operates over the filesystem
@@ -38,13 +34,13 @@ Graph.prototype.addHashReader = function (fn) {
 }
 
 /**
- * Add a module definition. 
+ * Add a module definition.
  * This is simply a constructor but it should have at least two functions associated with it. One is the requires function which should be an instance method that returns an Array of paths to the modules dependencies. The other is a "class method" defined under the property test. This is what is used to determine if this is a suitable type for a file. It will be passed a file object with {path:..., text:...} properties. `test` should return an Interger from 0 to Infinity based on how suitable the given file is for the module type. 0 meaning not suitable at all and Infinity meaning your absolutely certain.
- * 
+ *
  * Example definition of a Javascript module type:
  *
  *   function Javascript (file) {
- *     this.path = file.path     
+ *     this.path = file.path
  *     this.text = file.text
  *     this.requires = function () {
  *       return detective(this.text)
@@ -55,8 +51,8 @@ Graph.prototype.addHashReader = function (fn) {
  *     return match ? 1 : 0
  *   }
  *   graph.addType(Javascript)
- *  
- * @param {Function} type 
+ *
+ * @param {Function} type
  * @return {this}
  */
 
@@ -89,7 +85,7 @@ Graph.prototype.use = function () {
 			assertFn(plug.hashSystem)
 			this.addHashReader(plug.hashSystem)
 		}
-		
+
 		plug.types && plug.types.forEach(this.addType, this)
 	}
 	return this

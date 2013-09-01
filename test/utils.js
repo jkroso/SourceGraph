@@ -2,11 +2,11 @@
 var fs = require('fs')
 
 /**
- * Helper for checking graphs creating graphs and checking 
+ * Helper for checking graphs creating graphs and checking
  * they contain what they should
  *
  * @param {Array} files, the first path should be the entry file
- * @return {Promise} for completion
+ * @return {Result}
  */
 
 exports.run = function(graph, files, extra){
@@ -21,5 +21,5 @@ exports.run = function(graph, files, extra){
 }
 
 exports.read = function(path){
-	return fs.readFileSync(path, 'utf-8').toString()
+	return fs.readFileSync(path, 'utf-8')
 }
