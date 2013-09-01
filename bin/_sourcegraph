@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 var debug = require('debug')('sourcegraph:cli')
-  , program = require('commander')
-  , unique = require('unique')
-  , all = require('when-all')
-  , path = require('path')
-  , Graph = require('..')
-  , fs = require('fs')
+var program = require('commander')
+var unique = require('unique')
+var map = require('map/async')
+var path = require('path')
+var Graph = require('..')
+var fs = require('fs')
 
 require('colors')
 
@@ -69,12 +69,10 @@ var files = program.args.map(function(file){
 	return path.resolve(file)
 })
 
-var pending = files.map(function(file){
+map(files, function(file){
 	console.warn(('Tracing from file: %s').green, file)
 	return graph.add(file)
-})
-
-all(pending).read(function(files){
+}).read(function(files){
 	// they are all the same object
 	files = files[0]
 	var paths = unique(Object.keys(files).map(function(path){
