@@ -4,35 +4,33 @@ exports.types = [
 	Javascript
 ]
 
-function Javascript (file) {
+function Javascript(file){
 	this.path = file.path
 	this.text = file.text
 }
 
-Javascript.test = function (file) {
+Javascript.test = function(file){
 	if (file.path.match(/\.js$/)) return 1
 }
 
-Javascript.prototype.requires = function () {
-	try {
-		var files = detective(this.text)
-	} catch (e) {
-		e.message += ' in '+this.path
+Javascript.prototype.requires = function(){
+	try { return detective(this.text) }
+	catch (e) {
+		e.message += ' in ' + this.path
 		throw e
 	}
-	return files
 }
 
 /**
- * Determine all the paths that would have resulted in finding this file
- * 
+ * suggest completions for `path`
+ *
  * @param {String} path
  * @return {Array}
  */
 
-Javascript.completions = function (path) {
+Javascript.completions = function(path){
 	var results = []
-	
+
 	// Is it an explicit directory
 	if (path.match(/\/$/)) {
 		results.push(path+'index.js')
@@ -40,11 +38,10 @@ Javascript.completions = function (path) {
 	// Did they end it without an extension
 	else if (!path.match(/\.js$/)) {
 		results.push(
-			path+'.js', 
+			path+'.js',
 			path+'/index.js'
 		)
-	}
-	else {
+	} else {
 		results.push(path)
 	}
 

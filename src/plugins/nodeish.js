@@ -1,13 +1,13 @@
 
+var core = require('browser-builtins')
 var detect = require('detect/series')
-  , core = require('browser-builtins')
-  , readFile = require('../file').fs
-  , join = require('path').join
-  , fs = require('resultify/fs')
+var readFile = require('../file').fs
+var fs = require('resultify/fs')
+var join = require('path').join
 
 /**
  * Produce an ordered list of paths to try
- * 
+ *
  * @param {String} dir
  * @param {String} path
  * @return {Array} of path
@@ -42,7 +42,7 @@ function variants (dir, path) {
 
 /**
  * Look for a given module with a given directory
- * 
+ *
  * Note: In node, core modules, take priority over custom
  * ones. In this system they don't since I find it a pain
  *
@@ -61,7 +61,7 @@ exports.fileSystem = function(dir, name){
 	}).then(null, function(reason){
 		// is top level directory
 		if (dir.lastIndexOf('/') <= 0 && name in core) {
-			return readFile(core[name]).then(function (file) {
+			return readFile(core[name]).then(function(file){
 				// Pretend the file came from the global directory
 				file.alias = dir + '/' + name + '.js'
 				return file
@@ -95,24 +95,24 @@ exports.variants = variants
 
 /**
  * Handler for package.json files
- * 
- * npm package.json files sometimes include a `main` 
- * property. If so that file would likely otherwise 
+ *
+ * npm package.json files sometimes include a `main`
+ * property. If so that file would likely otherwise
  * not be picked up. In general though all dependencies
- * for npm packages is found within the source files 
+ * for npm packages is found within the source files
  * themselves
  */
 
-function NodePackage (file) {
+function NodePackage(file){
 	this.path = file.path
 	this.text = file.text
 }
 
-NodePackage.test = function (file) {
+NodePackage.test = function(file){
 	if (file.path.match(/\/package\.json$/)) return 2
 }
 
-NodePackage.prototype.requires = function () {
+NodePackage.prototype.requires = function(){
 	var deps = []
 	var main = JSON.parse(this.text).main
 	if (main != null) {

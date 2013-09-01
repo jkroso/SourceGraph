@@ -1,7 +1,7 @@
 
 exports.types = [ CSS ]
 
-function CSS (file) {
+function CSS(file){
 	this.path = file.path
 	this.text = file.text
 }
@@ -9,11 +9,12 @@ function CSS (file) {
 /**
  * TODO: do it properly
  */
-CSS.prototype.requires = function () {
+
+CSS.prototype.requires = function(){
 	return []
 }
 
-CSS.test = function (file) {
+CSS.test = function(file){
 	if (file.path.match(/\.css$/)) {
 		return 1
 	}

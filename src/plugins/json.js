@@ -2,29 +2,29 @@ exports.types = [
 	Json
 ]
 
-function Json (file) {
+function Json(file){
 	this.text = file.text
 	this.path = file.path
 }
 
-Json.test = function (file) {
+Json.test = function(file){
 	if (file.path.match(/\.json$/)) return 1
 }
 
-Json.prototype.requires = function () {
+Json.prototype.requires = function(){
 	return []
 }
 
 /**
- * Determine all the paths that would have resulted in finding this file
- * 
+ * suggest completions for `path`
+ *
  * @param {String} path
  * @return {Array}
  */
 
-Json.completions = function (path) {
+Json.completions = function(path){
 	var results = []
-	
+
 	// Is it an explicit directory
 	if (path.match(/\/$/)) {
 		results.push(path+'index.json')
@@ -35,8 +35,7 @@ Json.completions = function (path) {
 			path+'.json',
 			path+'/index.json'
 		)
-	}
-	else {
+	} else {
 		results.push(path)
 	}
 
