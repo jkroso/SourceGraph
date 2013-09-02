@@ -7,7 +7,7 @@ var resolve = path.resolve
 var Graph = require('..')
 var fs = require('fs')
 
-var node = require('../src/plugins/nodeish')
+var node = require('../plugins/nodeish')
 
 describe('hash system', function(){
 	it('should return a full path', function(){
