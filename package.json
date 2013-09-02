@@ -1,23 +1,22 @@
 {
   "name": "sourcegraph",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "dependencies": {
     "async-loop": "http://github.com/jkroso/async-loop/tarball/0.2.0",
-    "foreach": "http://github.com/jkroso/forEach/tarball/0.8.5",
+    "foreach": "http://github.com/jkroso/forEach/tarball/0.8.6",
     "winner": "http://github.com/jkroso/winner/tarball/0.3.2",
-    "detect": "http://github.com/jkroso/detect/tarball/0.3.2",
+    "detect": "http://github.com/jkroso/detect/tarball/0.3.3",
     "unique": "http://github.com/jkroso/unique/tarball/0.0.1",
     "debug": "http://github.com/jkroso/debug/tarball/0.7.3",
-    "when": "http://github.com/jkroso/when/tarball/3.3.1",
-    "map": "http://github.com/jkroso/map/tarball/0.2.6",
+    "map": "http://github.com/jkroso/map/tarball/0.2.7",
     "browser-builtins": "1.0.7",
+    "lift-result": "0.1.0",
     "superagent": "0.15.4",
     "result-type": "1.0.0",
     "detective": "2.1.1",
     "commander": "2.0.0",
-    "resultify": "0.2.4",
     "colors": "0.6.0-1",
-    "result": "0.3.3"
+    "result": "0.3.4"
   },
   "devDependencies": {
     "mocha": "~1.12.1",

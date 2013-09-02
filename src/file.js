@@ -3,9 +3,8 @@ var debug = require('debug')('sourcegraph:getfile')
 var doUntil = require('async-loop').doUntil
 var defer = require('result/defer')
 var request = require('superagent')
-var fs = require('resultify/fs')
-var when = require('when/read')
-var lift = require('when/lift')
+var fs = require('lift-result/fs')
+var lift = require('lift-result')
 var Result = require('result')
 var util = require('./utils')
 var path = require('path')
@@ -62,16 +61,15 @@ function fromPackage(dir, name){
 	var start = dir
 
 	doUntil(function(loop){
-		find(readers, readFile).then(write, function(){
+		var folder = join(dir, ns)
+		find(readers, function(fn){
+			return fn(folder, name)
+		}).then(write, function(){
 			var again = dir == '/'
 			dir = path.dirname(dir)
 			loop(again)
 		})
 	}, error)
-
-	function readFile(reader){
-		return reader(join(dir, ns), name)
-	}
 
 	function write(file){
 		if (typeof file == 'object') result.write(file)
@@ -99,7 +97,7 @@ function find(array, ƒ){
 		var i = 0
 		function next(e){
 			if (i == len) fail(new Error('all failed: '+e.message))
-			else when(ƒ(array[i], i++), write, next)
+			else Result.read(ƒ(array[i], i++), write, next)
 		}
 		next()
 	})
