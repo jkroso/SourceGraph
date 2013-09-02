@@ -1,13 +1,19 @@
 
 var debug = require('debug')('sourcegraph')
+var doUntil = require('async-loop').doUntil
 var each = require('foreach/async')
-var getfile = require('./file')
+var request = require('superagent')
+var fs = require('lift-result/fs')
+var lift = require('lift-result')
+var Result = require('result')
 var winner = require('winner')
 var unique = require('unique')
-var util = require('./utils')
-var find = require('detect')
+var detect = require('detect')
 var path = require('path')
 var url = require('url')
+var resolve = path.resolve
+var dirname = path.dirname
+var join = path.join
 
 module.exports = Graph
 
@@ -27,14 +33,48 @@ function Graph () {
 }
 
 /**
- * get a file from where-ever
+ * retrieve a file
  *
  * @param {String} base
- * @param {String} path
- * @return {Object} file
+ * @param {String} name
+ * @return {Result} file
  */
 
-Graph.prototype.getFile = getfile
+Graph.prototype.getFile = function(base, name){
+	var path = joinPath(base, name)
+	if (!path) return fromPackage.call(this, base, name)
+	var get = getFile[protocol(path)]
+	return find(this.completions(path), get)
+}
+
+// protocol handlers
+var getFile = {
+	http: function(path){
+		var result = new Result
+		debug('remote requesting %s', path)
+		request.get(path).buffer().end(function(res){
+			debug('response %s => %d', path, res.status)
+			if (!res.ok) result.error(res.error)
+			else result.write({
+				'path': path,
+				'text': res.text,
+				'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
+			})
+		})
+		return result
+	},
+	fs: function(path){
+		var real = fs.realpath(path)
+		return new File(
+			real,
+			path,
+			fs.stat(real),
+			fs.readFile(real, 'utf8'))
+	}
+}
+
+// alias http
+getFile.https = getFile.http
 
 /**
  * add a file and it dependencies to `this` graph
@@ -175,9 +215,9 @@ function modulize(file, types){
 
 Graph.prototype.which = function(dir, req){
 	var graph = this.graph
-	var path = util.joinPath(dir, req)
+	var path = joinPath(dir, req)
 	if (!path) return whichPackage.call(this, dir, req)
-	return find(this.completions(path), function (path) {
+	return detect(this.completions(path), function (path) {
 		return path in graph
 	})
 }
@@ -193,7 +233,7 @@ Graph.prototype.which = function(dir, req){
  */
 
 function whichPackage(dir, req){
-	if (util.isRemote(dir)) throw new Error('not supporting remote packages yet')
+	if (isRemote(dir)) throw new Error('not supporting remote packages yet')
 	var checks = this.hashReaders
 	var graph = this.graph
 	while (true) {
@@ -259,3 +299,119 @@ Graph.prototype.clear = function(){
 	this.graph = {}
 	return this
 }
+
+/**
+ * attempt to join `base` and `req` if safe to do so
+ *
+ * @param {String} base
+ * @param {String} req
+ * @return {String}
+ */
+
+function joinPath(base, req){
+	if (isRelative(req)) {
+		return isRemote(base)
+			? url.resolve(base.replace(/\/?$/, '/'), req)
+			: path.join(base, req)
+	}
+	if (isAbsolute(req)) {
+		return isRemote(base)
+			? url.resolve(base, req)
+			: req
+	}
+	if (isRemote(req)) return req
+}
+
+/**
+ * determine an appropriate retreval protocol for `path`
+ *
+ * @param {String} path
+ * @return {String}
+ */
+
+function protocol(path){
+	if (/^\//.test(path)) return 'fs'
+	return (/^(\w+):\/\//).exec(path)[1]
+}
+
+/**
+ * get a file from a package
+ *
+ * @param {String} dir
+ * @param {String} name
+ * @return {Result} file
+ */
+
+function fromPackage(dir, name){
+	if (isRemote(dir)) throw new Error('remote packages un-implemented')
+	var ns = this.packageDirectory
+	var readers = this.fsReaders
+	var result = new Result
+	var start = dir
+
+	doUntil(function(loop){
+		var folder = join(dir, ns)
+		find(readers, function(fn){
+			return fn(folder, name)
+		}).then(write, function(){
+			var again = dir == '/'
+			dir = path.dirname(dir)
+			loop(again)
+		})
+	}, error)
+
+	function write(file){
+		if (typeof file == 'object') result.write(file)
+		else getFile.fs(file).read(write, error)
+	}
+
+	function error(){
+		result.error(new Error('unable to resolve '+name+' from '+start))
+	}
+
+	return result
+}
+
+function isRelative(path){
+	return (/^\./).test(path)
+}
+
+function isAbsolute(path){
+	return (/^\//).test(path)
+}
+
+function isRemote(path){
+	return (/^[a-zA-Z]+:\/\//).test(path)
+}
+
+/**
+ * look for a successful call of `ƒ`
+ *
+ * @param {Array} array
+ * @param {Function} ƒ
+ * @return {Result}
+ */
+
+function find(array, ƒ){
+	var result = new Result
+	var len = array.length
+	var i = 0
+	function next(e){
+		if (i == len) result.error(new Error('all failed: '+e.message))
+		else Result.read(ƒ(array[i], i++), function(val){
+			result.write(val)
+		}, next)
+	}
+	next()
+	return result
+}
+
+var File = lift(function(real, path, stat, text){
+	this.path = real
+	if (real != path) this.alias = path
+	this['last-modified'] = +stat.mtime
+	this.text = text
+	return this
+})
+
+Graph.readFile = getFile.fs

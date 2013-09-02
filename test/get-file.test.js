@@ -1,5 +1,4 @@
 
-var getFile = require('../src/file')
 var read = require('./utils').read
 var chai = require('./chai')
 var path = require('path')

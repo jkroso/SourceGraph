@@ -1,7 +1,7 @@
 
+var readFile = require('../graph').readFile
 var core = require('browser-builtins')
 var detect = require('detect/series')
-var readFile = require('../file').fs
 var fs = require('lift-result/fs')
 var join = require('path').join
 
