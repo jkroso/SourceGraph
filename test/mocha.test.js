@@ -30,7 +30,7 @@ describe('mocha plugin', function(){
 			root+'test/index.test.js',
 			root+'src/index.js'
 		]
-		run(graph, files, 1).then(function(files){
+		run(graph, files, 2).then(function(files){
 			var built = top+'/node_modules/mocha/mocha.js'
 			files.should.have.property('/node_modules/mocha/index.js')
 				.and.property('text', read(built)+'\nmodule.exports = mocha')
