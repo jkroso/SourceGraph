@@ -3,20 +3,20 @@
   "version": "0.8.5",
   "dependencies": {
     "async-loop": "http://github.com/jkroso/async-loop/tarball/0.2.0",
-    "foreach": "http://github.com/jkroso/forEach/tarball/0.8.6",
+    "foreach": "http://github.com/jkroso/forEach/tarball/0.8.7",
     "winner": "http://github.com/jkroso/winner/tarball/0.3.2",
     "detect": "http://github.com/jkroso/detect/tarball/0.3.3",
     "unique": "http://github.com/jkroso/unique/tarball/0.0.1",
     "debug": "http://github.com/jkroso/debug/tarball/0.7.3",
     "map": "http://github.com/jkroso/map/tarball/0.2.7",
-    "browser-builtins": "1.0.7",
-    "lift-result": "0.1.0",
+    "browser-builtins": "2.0.0",
+    "lift-result": "0.1.1",
     "superagent": "0.15.4",
     "result-type": "1.0.0",
     "detective": "2.1.1",
     "commander": "2.0.0",
     "colors": "0.6.0-1",
-    "result": "0.3.4"
+    "result": "0.4.2"
   },
   "devDependencies": {
     "mocha": "~1.12.1",

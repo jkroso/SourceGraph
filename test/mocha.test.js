@@ -21,16 +21,17 @@ describe('mocha plugin', function(){
 	})
 
 	beforeEach(function(){
-		graph = new Graph().use('mocha', 'nodeish')
+		graph = new Graph()
+			.use('mocha')
+			.use('nodeish')
 	})
 
 	it('should use the pre-built version of mocha but pretend its the normal one', function(done){
-		var files = [
+		run(graph, [
 			root+'test/browser.js',
 			root+'test/index.test.js',
 			root+'src/index.js'
-		]
-		run(graph, files, 2).then(function(files){
+		], 2).then(function(files){
 			var built = top+'/node_modules/mocha/mocha.js'
 			files.should.have.property('/node_modules/mocha/index.js')
 				.and.property('text', read(built)+'\nmodule.exports = mocha')

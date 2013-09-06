@@ -27,65 +27,57 @@ describe('file system', function(){
 	})
 
 	it('can include a simple npm package', function(done){
-		var files = [
+		run(graph, [
 			base+'/expandsingle/index.js',
 			base+'/expandsingle/node_modules/foo.js'
-		]
-		run(graph, files).node(done)
+		]).node(done)
 	})
 
 	it('even if it isn\'t relative but has a .js on the end', function(done){
-		var files = [
+		run(graph, [
 			base+'/with_extension/index.js',
 			base+'/with_extension/node_modules/foo.js'
-		]
-		run(graph, files).node(done)
+		]).node(done)
 	})
 
 	it('can include a npm package folder from an index.js', function(done){
-		var files = [
+		run(graph, [
 			base+'/expandindex/index.js',
 			base+'/expandindex/node_modules/foo/index.js'
-		]
-		run(graph, files).node(done)
+		]).node(done)
 	})
 
 	it('can add a package thats lacks an index', function(done) {
-		var files = [
+		run(graph, [
 			base+'/expandpackage/index.js',
 			base+'/expandpackage/node_modules/foo/package.json',
 			base+'/expandpackage/node_modules/foo/lib/sub.js'
-		]
-		run(graph, files).node(done)
+		]).node(done)
 	})
 
 	it('when a dependency has a dependency it gets resolved as well', function(done) {
-		var files = [
+		run(graph, [
 			base+'/hassubdependency/index.js',
 			base+'/hassubdependency/node_modules/foo/index.js',
 			base+'/hassubdependency/node_modules/foo/node_modules/bar/index.js'
-		]
-		run(graph, files).node(done)
+		]).node(done)
 	})
 
 	it('when deps are mixed', function(done) {
-		var files = [
+		run(graph, [
 			base+'/mixed_deps/package.json',
 			base+'/mixed_deps/main.js',
 			base+'/mixed_deps/node_modules/aaa/index.js',
 			base+'/mixed_deps/node_modules/bbb.js',
 			base+'/mixed_deps/node_modules/aaa/node_modules/ccc/index.js'
-		]
-		run(graph, files).node(done)
+		]).node(done)
 	})
 
 	it('should resolve core modules with the lowest priority', function(done){
-		var files = [
+		run(graph, [
 			base+'/core/index.js',
 			base+'/core/node_modules/path.js'
-		]
-
-		run(graph, files, 2).node(done)
+		], 6).node(done)
 	})
 
 	it('should pretend core node modules are located in a global folder', function(done){
@@ -98,13 +90,12 @@ describe('file system', function(){
 
 	it('should prevent duplicate dependencies being output', function(done){
 		var dir = base + '/concurrent-requires/'
-		var files = [
+		run(graph, [
 			dir+'index.js',
 			dir+'pair-a.js',
 			dir+'pair-b.js',
 			dir+'pair-c.js'
-		]
-		run(graph, files).node(done)
+		]).node(done)
 	})
 
 	it('built-in node modules', function(done){
@@ -113,8 +104,7 @@ describe('file system', function(){
 				'/node_modules/tty.js',
 				'/node_modules/assert.js',
 				'/node_modules/buffer.js',
-				'/node_modules/util.js',
-				'/node_modules/events.js'
+				'/node_modules/util.js'
 			)
 		}).node(done)
 	})
