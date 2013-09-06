@@ -23,7 +23,8 @@ function MochaJS(file){
 	// Note the path to this module will remain index.js it just
 	// that we switch the contents of that file for that from their
 	// browser build
-	this.path = '/node_modules/mocha/index.js'
+	this.path = file.path
+	file.alias = '/node_modules/mocha/index.js'
 	var build = path.join(file.path, '../mocha.js')
 	try {
 		this.text = fs.readFileSync(build, 'utf-8')

@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "dependencies": {
     "async-loop": "http://github.com/jkroso/async-loop/tarball/0.2.0",
     "foreach": "http://github.com/jkroso/forEach/tarball/0.8.7",
