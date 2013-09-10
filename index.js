@@ -2,9 +2,9 @@
 var debug = require('debug')('sourcegraph')
 var doUntil = require('async-loop').doUntil
 var each = require('foreach/async')
-var request = require('superagent')
 var fs = require('lift-result/fs')
 var lift = require('lift-result')
+var request = require('solicit')
 var Result = require('result')
 var winner = require('winner')
 var unique = require('unique')
@@ -44,25 +44,23 @@ function Graph(){
 Graph.prototype.getFile = function(base, name){
 	var path = joinPath(base, name)
 	if (!path) return fromPackage.call(this, base, name)
-	var get = getFile[protocol(path)]
-	return find(this.completions(path), get)
+	var fn = getFile[protocol(path)]
+	return find(this.completions(path), fn)
 }
 
 // protocol handlers
 var getFile = {
 	http: function(path){
-		var result = new Result
-		debug('remote requesting %s', path)
-		request.get(path).buffer().end(function(res){
-			debug('response %s => %d', path, res.status)
-			if (!res.ok) result.error(res.error)
-			else result.write({
+		debug('requesting %s', path)
+		return request.get(path).then(function(body){
+			debug('received %s', path)
+			var mtime = this.res.headers['last-modified']
+			return {
 				'path': path,
-				'text': res.text,
-				'last-modified': Date.parse(res.headers['last-modified']) || Date.now()
-			})
+				'text': body,
+				'last-modified': Date.parse(mtime) || Date.now()
+			}
 		})
-		return result
 	},
 	fs: function(path){
 		var real = fs.realpath(path)
@@ -76,6 +74,14 @@ var getFile = {
 
 // alias http
 getFile.https = getFile.http
+
+var File = lift(function(real, path, stat, text){
+	this.path = real
+	if (real != path) this.alias = path
+	this['last-modified'] = +stat.mtime
+	this.text = text
+	return this
+})
 
 /**
  * add a file and it dependencies to `this` graph
@@ -301,7 +307,7 @@ Graph.prototype.completions = function(path){
 
 /**
  * remove all files so the graph can be rebuilt
- * 
+ *
  * @return {this}
  * @api public
  */
@@ -421,14 +427,6 @@ function find(array, ƒ){
 	next()
 	return result
 }
-
-var File = lift(function(real, path, stat, text){
-	this.path = real
-	if (real != path) this.alias = path
-	this['last-modified'] = +stat.mtime
-	this.text = text
-	return this
-})
 
 Graph.readFile = getFile.fs
 

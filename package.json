@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "dependencies": {
     "async-loop": "http://github.com/jkroso/async-loop/tarball/0.2.0",
     "foreach": "http://github.com/jkroso/forEach/tarball/0.8.7",
@@ -11,16 +11,16 @@
     "map": "http://github.com/jkroso/map/tarball/0.2.7",
     "browser-builtins": "2.0.0",
     "lift-result": "0.1.1",
-    "superagent": "0.15.4",
     "result-type": "1.0.0",
     "detective": "2.1.1",
     "commander": "2.0.0",
     "colors": "0.6.0-1",
+    "solicit": "0.0.1",
     "result": "0.4.2"
   },
   "devDependencies": {
-    "mocha": "~1.12.1",
-    "chai": "~1.7.2"
+    "mocha": "1.12.1",
+    "chai": "1.7.2"
   },
   "repository": {
     "type": "git",
