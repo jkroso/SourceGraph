@@ -29,5 +29,6 @@
   "bin": {
     "sourcegraph": "bin/sourcegraph",
     "_sourcegraph": "bin/_sourcegraph"
-  }
+  },
+  "files": ["plugins", "index.js", "bin"]
 }
