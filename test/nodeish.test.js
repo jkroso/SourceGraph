@@ -77,7 +77,7 @@ describe('file system', function(){
 		run(graph, [
 			base+'/core/index.js',
 			base+'/core/node_modules/path.js'
-		], 6).node(done)
+		], 5).node(done)
 	})
 
 	it('should pretend core node modules are located in a global folder', function(done){

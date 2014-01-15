@@ -1,31 +1,28 @@
 {
   "name": "sourcegraph",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "dependencies": {
-    "async-loop": "http://github.com/jkroso/async-loop/tarball/0.2.0",
-    "foreach": "http://github.com/jkroso/forEach/tarball/0.8.7",
-    "winner": "http://github.com/jkroso/winner/tarball/0.3.2",
-    "detect": "http://github.com/jkroso/detect/tarball/0.3.3",
-    "unique": "http://github.com/jkroso/unique/tarball/0.0.1",
-    "debug": "http://github.com/jkroso/debug/tarball/0.7.3",
-    "map": "http://github.com/jkroso/map/tarball/0.2.7",
-    "browser-builtins": "2.0.0",
-    "lift-result": "0.1.1",
+    "async-loop": "jkroso/async-loop#0.2.0",
+    "foreach": "jkroso/forEach#0.8.9",
+    "winner": "jkroso/winner#0.3.2",
+    "detect": "jkroso/detect#0.3.3",
+    "unique": "jkroso/unique#0.0.1",
+    "debug": "jkroso/debug#0.7.3",
+    "map": "jkroso/map#0.2.10",
+    "lift-result": "~0.1.3",
+    "browser-builtins": "*",
     "result-type": "1.0.0",
-    "detective": "2.1.1",
-    "commander": "2.0.0",
+    "detective": "2.2.0",
+    "commander": "2.1.0",
     "colors": "0.6.0-1",
-    "solicit": "0.0.1",
-    "result": "0.4.2"
+    "solicit": "~0.0.6",
+    "result": "~0.4.6"
   },
   "devDependencies": {
-    "mocha": "1.12.1",
-    "chai": "1.7.2"
+    "mocha": "*",
+    "chai": "*"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/jkroso/sourcegraph.git"
-  },
+  "repository": "git://github.com/jkroso/sourcegraph.git",
   "bin": {
     "sourcegraph": "bin/sourcegraph",
     "_sourcegraph": "bin/_sourcegraph"

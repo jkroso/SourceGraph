@@ -1,15 +1,14 @@
 REPORTER=dot
 
 test: node_modules
-	@node_modules/mocha/bin/_mocha \
+	@node_modules/mocha/bin/mocha test/*.test.js \
 		--reporter $(REPORTER) \
 		--timeout 0 \
 		--slow 3s \
-		--bail \
-		test/*.test.js
+		--bail
 
 node_modules: package.json
-	@packin install -Re \
+	@packin install \
 		--meta package.json \
 		--folder node_modules
 
