@@ -4,12 +4,9 @@ var chai = require('./chai')
 var path = require('path')
 var Graph = require('..')
 var fs = require('fs')
+var graph
 
 describe('getFile(base, path)', function(){
-	var jquery = 'http://code.jquery.com/jquery-1.8.0.js'
-	var localjq = __dirname + '/fixtures/jquery-1.8.0.js'
-	var jqHost = jquery.replace(/\/[^\/]*$/, '')
-	var graph
 	beforeEach(function(){
 		graph = new Graph
 	})
@@ -22,35 +19,6 @@ describe('getFile(base, path)', function(){
 		}).node(done)
 	})
 
-	it('should fetch an absolute url from a remote base', function(done){
-		graph.getFile(jqHost, jquery).then(function(file){
-			file.should.have.property('path', jquery);
-			file.should.have.property('text', read(localjq))
-		}).node(done)
-	})
-	
-	it('should fetch a relative path from a url base', function(done){
-		graph.getFile(jqHost, './jquery-1.8.0.js').then(function(file){
-			file.should.have.property('path', jquery)
-			file.should.have.property('text', read(localjq))
-		}).node(done)
-	})
-
-	it('should fetch a remote url from a local base', function(done){
-		graph.getFile('/', jquery).then(function(file){
-			file.should.have.property('path', jquery)
-			file.should.have.property('text', read(localjq))
-		}).node(done)
-	})
-
-	it('should not fetch an absolute local path from a url base', function(done){
-		var path = __dirname+'/get-file.test.js'
-		graph.getFile(jqHost, path).then(function(file){
-			file.should.have.property('path', path)
-			file.should.have.property('text', read(path))
-		}).then(null, function(){ done() })
-	})
-	
 	it('should resolve a node package from a local base', function(done){
 		graph.use('nodeish')
 		var dir = __dirname+'/fixtures/node/expandsingle'

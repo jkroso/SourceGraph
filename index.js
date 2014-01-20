@@ -4,7 +4,6 @@ var doUntil = require('async-loop').doUntil
 var each = require('foreach/async')
 var fs = require('lift-result/fs')
 var lift = require('lift-result')
-var request = require('solicit')
 var Result = require('result')
 var winner = require('winner')
 var unique = require('unique')
@@ -12,8 +11,6 @@ var detect = require('detect')
 var path = require('path')
 var url = require('url')
 var resolve = path.resolve
-var dirname = path.dirname
-var join = path.join
 
 module.exports = Graph
 
@@ -42,38 +39,19 @@ function Graph(){
  */
 
 Graph.prototype.getFile = function(base, name){
-	var path = joinPath(base, name)
-	if (!path) return fromPackage.call(this, base, name)
-	var fn = getFile[protocol(path)]
-	return find(this.completions(path), fn)
+	if (/^[^.\/]/.test(name)) return fromPackage.call(this, base, name)
+	debugger;
+	return find(this.completions(resolve(base, name)), getFile)
 }
 
-// protocol handlers
-var getFile = {
-	http: function(path){
-		debug('requesting %s', path)
-		return request.get(path).then(function(body){
-			debug('received %s', path)
-			var mtime = this.res.headers['last-modified']
-			return {
-				'path': path,
-				'text': body,
-				'last-modified': Date.parse(mtime) || Date.now()
-			}
-		})
-	},
-	fs: function(path){
-		var real = fs.realpath(path)
-		return new File(
-			real,
-			path,
-			fs.stat(real),
-			fs.readFile(real, 'utf8'))
-	}
+function getFile(path){
+	var real = fs.realpath(path)
+	return new File(
+		real,
+		path,
+		fs.stat(real),
+		fs.readFile(real, 'utf8'))
 }
-
-// alias http
-getFile.https = getFile.http
 
 var File = lift(function(real, path, stat, text){
 	this.path = real
@@ -94,8 +72,9 @@ var File = lift(function(real, path, stat, text){
 Graph.prototype.add = function(path){
 	var self = this
 	return this.getFile(process.cwd(), path)
-		.then(this.addFile.bind(this), function(){
-			throw new Error('unable to get '+path)
+		.then(this.addFile.bind(this), function(e){
+			throw e
+			throw new Error('unable to get ' + path)
 		})
 		.then(this.trace.bind(this))
 		.then(function(){
@@ -227,9 +206,8 @@ function modulize(file, types){
 
 Graph.prototype.which = function(dir, req){
 	var graph = this.graph
-	var path = joinPath(dir, req)
-	if (!path) return whichPackage.call(this, dir, req)
-	return detect(this.completions(path), function (path) {
+	if (/^[^.\/]/.test(req)) return whichPackage.call(this, dir, req)
+	return detect(this.completions(resolve(dir, req)), function(path){
 		return path in graph
 	})
 }
@@ -246,7 +224,6 @@ Graph.prototype.which = function(dir, req){
  */
 
 function whichPackage(dir, req){
-	if (isRemote(dir)) throw new Error('not supporting remote packages yet')
 	var checks = this.hashReaders
 	var graph = this.graph
 	while (true) {
@@ -319,42 +296,6 @@ Graph.prototype.clear = function(){
 }
 
 /**
- * attempt to join `base` and `req` if safe to do so
- *
- * @param {String} base
- * @param {String} req
- * @return {String}
- * @api private
- */
-
-function joinPath(base, req){
-	if (isRelative(req)) {
-		return isRemote(base)
-			? url.resolve(base.replace(/\/?$/, '/'), req)
-			: path.join(base, req)
-	}
-	if (isAbsolute(req)) {
-		return isRemote(base)
-			? url.resolve(base, req)
-			: req
-	}
-	if (isRemote(req)) return req
-}
-
-/**
- * determine an appropriate retreval protocol for `path`
- *
- * @param {String} path
- * @return {String}
- * @api private
- */
-
-function protocol(path){
-	if (/^\//.test(path)) return 'fs'
-	return (/^(\w+):\/\//).exec(path)[1]
-}
-
-/**
  * get a file from a package
  *
  * @param {String} dir
@@ -364,17 +305,16 @@ function protocol(path){
  */
 
 function fromPackage(dir, name){
-	if (isRemote(dir)) throw new Error('remote packages un-implemented')
 	var ns = this.packageDirectory
 	var readers = this.fsReaders
 	var result = new Result
 	var start = dir
 
 	doUntil(function(loop){
-		var folder = join(dir, ns)
+		var folder = resolve(dir, ns)
 		find(readers, function(fn){
 			return fn(folder, name)
-		}).then(write, function(){
+		}).read(write, function(){
 			var again = dir == '/'
 			dir = path.dirname(dir)
 			loop(again)
@@ -383,7 +323,7 @@ function fromPackage(dir, name){
 
 	function write(file){
 		if (typeof file == 'object') result.write(file)
-		else getFile.fs(file).read(write, error)
+		else Result.read(getFile(file), write, error)
 	}
 
 	function error(){
@@ -391,18 +331,6 @@ function fromPackage(dir, name){
 	}
 
 	return result
-}
-
-function isRelative(path){
-	return (/^\./).test(path)
-}
-
-function isAbsolute(path){
-	return (/^\//).test(path)
-}
-
-function isRemote(path){
-	return (/^[a-zA-Z]+:\/\//).test(path)
 }
 
 /**
@@ -428,7 +356,7 @@ function find(array, ƒ){
 	return result
 }
 
-Graph.readFile = getFile.fs
+Graph.readFile = getFile
 
 /**
  * Add package resolver that operates over the filesystem

@@ -48,18 +48,6 @@ describe('which(base, name)', function(){
 		graph.graph[p2] = {}
 		graph.which(base, 'foo').should.equal(p2)
 	})
-
-	it('should resolve a remote path', function(){
-		graph.graph['http://google.com/a/b/c'] = {}
-		graph.which('http://google.com/a/b', './c')
-			.should.equal('http://google.com/a/b/c')
-		graph.which('http://google.com/a/b', '/a/b/c')
-			.should.equal('http://google.com/a/b/c');
-		// until remote packages are implemented
-		(function(){
-			graph.which('http://google.com/a/b', 'a/b/c')
-		}).should.throw()
-	})
 })
 
 it('can define custom handlers', function(done) {
@@ -68,16 +56,15 @@ it('can define custom handlers', function(done) {
 	function Rndom (file) {
 		this.text = file.text
 		this.path = file.path
-		this.requires = function(){
-			return []
-		}
+		this.requires = function(){ return [] }
 	}
-	Rndom.test = function (file) {
+	Rndom.test = function(file){
 		if (file.path.match(/\.rndom$/)) return 1
 	}
-	graph.addType(Rndom)
+	graph
+		.addType(Rndom)
 		.add(p)
-		.then(function (data) {
+		.then(function(data){
 			should.exist(data)
 			data.should.have.property(p)
 				.and.property('text', read(p, 'utf-8'))
@@ -86,22 +73,11 @@ it('can define custom handlers', function(done) {
 
 it('should not fail on files it doesn\'t have a type for', function(done){
 	var p = __dirname + '/fixtures/non_js/example.rndom'
-	graph.add(p).then(function (data) {
+	graph.add(p).then(function(data){
 		should.exist(data)
 		data.should.have.property(p)
 			.and.have.property('requires').and.eql([])
 	}).node(done)
-})
-
-describe('Loading with protocols (e.g. http:)', function(){
-	var p = 'http://code.jquery.com/jquery-1.8.0.js'
-
-	it('simple one file case', function(done){
-		graph.add(p).then(function (files) {
-			files[p].path.should.equal(p)
-			files[p].text.should.include('hack')
-		}).node(done)
-	})
 })
 
 describe('symlinks', function(){
