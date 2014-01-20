@@ -22,11 +22,11 @@ var id = 1
  */
 
 function Graph(){
-	this.types = []
-	this.hashReaders = []
-	this.fsReaders = []
-	this.graph = {}
-	this.packageDirectory = 'node_modules'
+  this.types = []
+  this.hashReaders = []
+  this.fsReaders = []
+  this.graph = {}
+  this.packageDirectory = 'node_modules'
 }
 
 /**
@@ -39,26 +39,26 @@ function Graph(){
  */
 
 Graph.prototype.getFile = function(base, name){
-	if (/^[^.\/]/.test(name)) return fromPackage.call(this, base, name)
-	debugger;
-	return find(this.completions(resolve(base, name)), getFile)
+  if (/^[^.\/]/.test(name)) return fromPackage.call(this, base, name)
+  debugger;
+  return find(this.completions(resolve(base, name)), getFile)
 }
 
 function getFile(path){
-	var real = fs.realpath(path)
-	return new File(
-		real,
-		path,
-		fs.stat(real),
-		fs.readFile(real, 'utf8'))
+  var real = fs.realpath(path)
+  return new File(
+    real,
+    path,
+    fs.stat(real),
+    fs.readFile(real, 'utf8'))
 }
 
 var File = lift(function(real, path, stat, text){
-	this.path = real
-	if (real != path) this.alias = path
-	this['last-modified'] = +stat.mtime
-	this.text = text
-	return this
+  this.path = real
+  if (real != path) this.alias = path
+  this['last-modified'] = +stat.mtime
+  this.text = text
+  return this
 })
 
 /**
@@ -70,16 +70,16 @@ var File = lift(function(real, path, stat, text){
  */
 
 Graph.prototype.add = function(path){
-	var self = this
-	return this.getFile(process.cwd(), path)
-		.then(this.addFile.bind(this), function(e){
-			throw e
-			throw new Error('unable to get ' + path)
-		})
-		.then(this.trace.bind(this))
-		.then(function(){
-			return self.graph
-		})
+  var self = this
+  return this.getFile(process.cwd(), path)
+    .then(this.addFile.bind(this), function(e){
+      throw e
+      throw new Error('unable to get ' + path)
+    })
+    .then(this.trace.bind(this))
+    .then(function(){
+      return self.graph
+    })
 }
 
 /**
@@ -91,19 +91,19 @@ Graph.prototype.add = function(path){
  */
 
 Graph.prototype.addFile = function(file){
-	var module = this.graph[file.path]
-	var isNew = !module
-	if (isNew) {
-		debug('received: %p', file.path)
-		module = modulize(file, this.types)
-		this.graph[module.path] = module
-	}
-	if (file.alias) {
-		debug('alias: %p -> %p', file.alias, file.path)
-		module.aliases.push(file.alias)
-		this.graph[file.alias] = module
-	}
-	if (isNew) return module
+  var module = this.graph[file.path]
+  var isNew = !module
+  if (isNew) {
+    debug('received: %p', file.path)
+    module = modulize(file, this.types)
+    this.graph[module.path] = module
+  }
+  if (file.alias) {
+    debug('alias: %p -> %p', file.alias, file.path)
+    module.aliases.push(file.alias)
+    this.graph[file.alias] = module
+  }
+  if (isNew) return module
 }
 
 /**
@@ -116,46 +116,46 @@ Graph.prototype.addFile = function(file){
  */
 
 Graph.prototype.trace = function(module){
-	// sudo files
-	module.requires
-		.filter(isObject)
-		.forEach(this.addFile, this)
+  // sudo files
+  module.requires
+    .filter(isObject)
+    .forEach(this.addFile, this)
 
-	var newDeps = module.requires
-		.filter(isString)
-		.filter(function(path){
-			var child = this.get(module.base, path)
-			if (child) relate(module, child)
-			return !child
-		}, this)
+  var newDeps = module.requires
+    .filter(isString)
+    .filter(function(path){
+      var child = this.get(module.base, path)
+      if (child) relate(module, child)
+      return !child
+    }, this)
 
-	return each(newDeps, function(path){
-		debug('#%d fetching: %p -> %p', module.id, module.base, path)
-		var self = this
-		return this.getFile(module.base, path)
-			.then(this.addFile.bind(this), function(e){
-				throw new Error('unable to get '+module.base+' -> '+path)
-			})
-			.then(function(child){
-				if (!child) return
-				relate(module, child)
-				return self.trace(child)
-			})
-	}, this)
+  return each(newDeps, function(path){
+    debug('#%d fetching: %p -> %p', module.id, module.base, path)
+    var self = this
+    return this.getFile(module.base, path)
+      .then(this.addFile.bind(this), function(e){
+        throw new Error('unable to get '+module.base+' -> '+path)
+      })
+      .then(function(child){
+        if (!child) return
+        relate(module, child)
+        return self.trace(child)
+      })
+  }, this)
 }
 
 function isObject(x){
-	return typeof x == 'object'
+  return typeof x == 'object'
 }
 
 function isString(x){
-	return typeof x == 'string'
+  return typeof x == 'string'
 }
 
 // set parent child relationship
 function relate(parent, child){
-	child.parents.push(parent.path)
-	module.children.push(child.path)
+  child.parents.push(parent.path)
+  module.children.push(child.path)
 }
 
 /**
@@ -168,30 +168,30 @@ function relate(parent, child){
  */
 
 function modulize(file, types){
-	var Type = winner(types, function (type) {
-		return type.test(file) || 0
-	}, 1)
-	if (Type) {
-		var module = new Type(file)
-	} else {
-		var module = file
-		debug('no module type for '+file.path)
-	}
-	var name = module.path
-	module.parents = []
-	module.children = []
-	module.aliases = []
-	module.base = path.dirname(name)
-	module.ext = path.extname(name)
-	module.name = path.basename(name, module.ext)
-	// Remove the dot
-	module.ext = module.ext.replace(/^\./, '')
-	module.lastModified = file['last-modified'] || Date.now()
-	module.requires = Type ? unique(module.requires()) : []
-	debug('#%d = %p', id, module.path)
-	debug('#%d dependencies: %j', id, module.requires)
-	module.id = id++
-	return module
+  var Type = winner(types, function (type) {
+    return type.test(file) || 0
+  }, 1)
+  if (Type) {
+    var module = new Type(file)
+  } else {
+    var module = file
+    debug('no module type for '+file.path)
+  }
+  var name = module.path
+  module.parents = []
+  module.children = []
+  module.aliases = []
+  module.base = path.dirname(name)
+  module.ext = path.extname(name)
+  module.name = path.basename(name, module.ext)
+  // Remove the dot
+  module.ext = module.ext.replace(/^\./, '')
+  module.lastModified = file['last-modified'] || Date.now()
+  module.requires = Type ? unique(module.requires()) : []
+  debug('#%d = %p', id, module.path)
+  debug('#%d dependencies: %j', id, module.requires)
+  module.id = id++
+  return module
 }
 
 /**
@@ -205,11 +205,11 @@ function modulize(file, types){
  */
 
 Graph.prototype.which = function(dir, req){
-	var graph = this.graph
-	if (/^[^.\/]/.test(req)) return whichPackage.call(this, dir, req)
-	return detect(this.completions(resolve(dir, req)), function(path){
-		return path in graph
-	})
+  var graph = this.graph
+  if (/^[^.\/]/.test(req)) return whichPackage.call(this, dir, req)
+  return detect(this.completions(resolve(dir, req)), function(path){
+    return path in graph
+  })
 }
 
 /**
@@ -224,17 +224,17 @@ Graph.prototype.which = function(dir, req){
  */
 
 function whichPackage(dir, req){
-	var checks = this.hashReaders
-	var graph = this.graph
-	while (true) {
-		var modir = path.join(dir, this.packageDirectory)
-		for (var i = 0, len = checks.length; i < len; i++) {
-			var res = checks[i].call(this, modir, req, graph)
-			if (res) return res
-		}
-		if (dir == '/') break
-		dir = path.dirname(dir)
-	}
+  var checks = this.hashReaders
+  var graph = this.graph
+  while (true) {
+    var modir = path.join(dir, this.packageDirectory)
+    for (var i = 0, len = checks.length; i < len; i++) {
+      var res = checks[i].call(this, modir, req, graph)
+      if (res) return res
+    }
+    if (dir == '/') break
+    dir = path.dirname(dir)
+  }
 }
 
 /**
@@ -247,8 +247,8 @@ function whichPackage(dir, req){
  */
 
 Graph.prototype.get = function(base, path){
-	path = this.which(base, path)
-	return path && this.graph[path]
+  path = this.which(base, path)
+  return path && this.graph[path]
 }
 
 /**
@@ -261,7 +261,7 @@ Graph.prototype.get = function(base, path){
  */
 
 Graph.prototype.has = function(base, path){
-	return this.which(base, path) != null
+  return this.which(base, path) != null
 }
 
 /**
@@ -275,11 +275,11 @@ Graph.prototype.has = function(base, path){
  */
 
 Graph.prototype.completions = function(path){
-	var paths = this.types.reduce(function(res, Type){
-		if (!Type.completions) return res
-		return res.concat(Type.completions(path))
-	}, [path])
-	return unique(paths)
+  var paths = this.types.reduce(function(res, Type){
+    if (!Type.completions) return res
+    return res.concat(Type.completions(path))
+  }, [path])
+  return unique(paths)
 }
 
 /**
@@ -290,9 +290,9 @@ Graph.prototype.completions = function(path){
  */
 
 Graph.prototype.clear = function(){
-	id = 1
-	this.graph = {}
-	return this
+  id = 1
+  this.graph = {}
+  return this
 }
 
 /**
@@ -305,32 +305,32 @@ Graph.prototype.clear = function(){
  */
 
 function fromPackage(dir, name){
-	var ns = this.packageDirectory
-	var readers = this.fsReaders
-	var result = new Result
-	var start = dir
+  var ns = this.packageDirectory
+  var readers = this.fsReaders
+  var result = new Result
+  var start = dir
 
-	doUntil(function(loop){
-		var folder = resolve(dir, ns)
-		find(readers, function(fn){
-			return fn(folder, name)
-		}).read(write, function(){
-			var again = dir == '/'
-			dir = path.dirname(dir)
-			loop(again)
-		})
-	}, error)
+  doUntil(function(loop){
+    var folder = resolve(dir, ns)
+    find(readers, function(fn){
+      return fn(folder, name)
+    }).read(write, function(){
+      var again = dir == '/'
+      dir = path.dirname(dir)
+      loop(again)
+    })
+  }, error)
 
-	function write(file){
-		if (typeof file == 'object') result.write(file)
-		else Result.read(getFile(file), write, error)
-	}
+  function write(file){
+    if (typeof file == 'object') result.write(file)
+    else Result.read(getFile(file), write, error)
+  }
 
-	function error(){
-		result.error(new Error('unable to resolve '+name+' from '+start))
-	}
+  function error(){
+    result.error(new Error('unable to resolve '+name+' from '+start))
+  }
 
-	return result
+  return result
 }
 
 /**
@@ -343,17 +343,17 @@ function fromPackage(dir, name){
  */
 
 function find(array, ƒ){
-	var result = new Result
-	var len = array.length
-	var i = 0
-	function next(e){
-		if (i == len) result.error(new Error('all failed: '+e.message))
-		else Result.read(ƒ(array[i], i++), function(val){
-			result.write(val)
-		}, next)
-	}
-	next()
-	return result
+  var result = new Result
+  var len = array.length
+  var i = 0
+  function next(e){
+    if (i == len) result.error(new Error('all failed: '+e.message))
+    else Result.read(ƒ(array[i], i++), function(val){
+      result.write(val)
+    }, next)
+  }
+  next()
+  return result
 }
 
 Graph.readFile = getFile
@@ -367,10 +367,10 @@ Graph.readFile = getFile
  */
 
 Graph.prototype.addFSReader = function(fn){
-	assertFn(fn)
-	this.fsReaders.push(fn)
-	this.fsReaders = unique(this.fsReaders)
-	return this
+  assertFn(fn)
+  this.fsReaders.push(fn)
+  this.fsReaders = unique(this.fsReaders)
+  return this
 }
 
 /**
@@ -382,10 +382,10 @@ Graph.prototype.addFSReader = function(fn){
  */
 
 Graph.prototype.addHashReader = function(fn){
-	assertFn(fn)
-	this.hashReaders.push(fn)
-	this.hashReaders = unique(this.hashReaders)
-	return this
+  assertFn(fn)
+  this.hashReaders.push(fn)
+  this.hashReaders = unique(this.hashReaders)
+  return this
 }
 
 /**
@@ -410,10 +410,10 @@ Graph.prototype.addHashReader = function(fn){
  */
 
 Graph.prototype.addType = function(type){
-	assertFn(type)
-	this.types.push(type)
-	this.types = unique(this.types)
-	return this
+  assertFn(type)
+  this.types.push(type)
+  this.types = unique(this.types)
+  return this
 }
 
 /**
@@ -425,26 +425,26 @@ Graph.prototype.addType = function(type){
  */
 
 Graph.prototype.use = function(){
-	// Handle several args
-	for (var i = 0, len = arguments.length; i < len; i++) {
-		var name = arguments[i]
-		var plug = require('./plugins/' + name + '.js')
-		debug('plugin %s provides: %j', name, Object.keys(plug))
+  // Handle several args
+  for (var i = 0, len = arguments.length; i < len; i++) {
+    var name = arguments[i]
+    var plug = require('./plugins/' + name + '.js')
+    debug('plugin %s provides: %j', name, Object.keys(plug))
 
-		if (plug.fileSystem) {
-			assertFn(plug.hashSystem)
-			this.addFSReader(plug.fileSystem)
-		}
-		if (plug.hashSystem) {
-			assertFn(plug.hashSystem)
-			this.addHashReader(plug.hashSystem)
-		}
+    if (plug.fileSystem) {
+      assertFn(plug.hashSystem)
+      this.addFSReader(plug.fileSystem)
+    }
+    if (plug.hashSystem) {
+      assertFn(plug.hashSystem)
+      this.addHashReader(plug.hashSystem)
+    }
 
-		plug.types && plug.types.forEach(this.addType, this)
-	}
-	return this
+    plug.types && plug.types.forEach(this.addType, this)
+  }
+  return this
 }
 
 function assertFn(fn){
-	if (typeof fn != 'function') throw new Error('Expected a function')
+  if (typeof fn != 'function') throw new Error('Expected a function')
 }
