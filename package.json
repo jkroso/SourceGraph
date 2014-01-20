@@ -5,7 +5,7 @@
     "async-loop": "jkroso/async-loop#0.2.0",
     "foreach": "jkroso/forEach#0.8.9",
     "winner": "jkroso/winner#0.3.2",
-    "detect": "jkroso/detect#0.3.3",
+    "detect": "jkroso/detect#0.3.4",
     "unique": "jkroso/unique#0.0.1",
     "debug": "jkroso/debug#0.7.3",
     "map": "jkroso/map#0.2.10",
