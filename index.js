@@ -40,7 +40,6 @@ function Graph(){
 
 Graph.prototype.getFile = function(base, name){
   if (/^[^.\/]/.test(name)) return fromPackage.call(this, base, name)
-  debugger;
   return find(this.completions(resolve(base, name)), getFile)
 }
 
