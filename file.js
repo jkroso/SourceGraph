@@ -25,7 +25,12 @@ function File(path){
 File.extend = extend
 File.cache = Object.create(null)
 File.create = function(real){
-  return this.cache[real] || (this.cache[real] = new this(real))
+  var file = this.cache[real]
+  if (!(file instanceof File)) {
+    file = new this(real)
+    File.cache[real] = file
+  }
+  return file
 }
 
 lazy(File.prototype, 'aliases', Array)
@@ -96,15 +101,16 @@ lazy(File.prototype, 'meta', function(){
 
 lazy(File.prototype, 'children', function(){
   return map(this.dependencies, function(path){
-    if (path in File.cache) return File.cache[path]
-    return fs.realpath(path).then(function(real){
+    return File.cache[path]
+    || (File.cache[path] = fs.realpath(path).then(function(real){
       var file = File.create(real)
+      // symlink
       if (real != path) {
         file.aliases.push(path)
         File.cache[path] = file
       }
       return file
-    })
+    }))
   })
 })
 
