@@ -10,6 +10,7 @@ var reduce = require('reduce/series')
 var lazy = require('lazy-property')
 var fs = require('lift-result/fs')
 var extend = require('extensible')
+var own = Object.hasOwnProperty
 var unique = require('unique')
 var Result = require('result')
 var Module = require('module')
@@ -111,14 +112,15 @@ lazy(File.prototype, 'children', function(){
 })
 
 File.prototype.toJSON = function(){
-  var resolved = this.dependencies.value
+  var resolved = this.children.value
   return {
     source: this.source.value,
     id: this.path,
     deps: this.requires.value.reduce(function(deps, name, i){
-      deps[name] = resolved[i]
+      deps[name] = resolved[i].path
       return deps
-    }, {})
+    }, {}),
+    aliases: own.call(this, 'aliases') ? this.aliases : undefined
   }
 }
 

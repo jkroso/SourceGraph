@@ -115,4 +115,22 @@ describe('.children', function(){
       arr[0].should.have.property('path', fixture('simple.js'))
     }).node(done)
   })
+
+  it('should follow symlinks', function(done){
+    new File(fixture('symlinked-dep.js')).children.then(function(arr){
+      arr.should.have.a.lengthOf(1)
+      arr[0].should.have.property('path', fixture('simple.js'))
+      arr[0].should.have.property('aliases').eql([fixture('simple.sym')])
+    }).node(done)
+  })
+})
+
+it('.toJSON()', function(done){
+  new File(fixture('symlinked-dep.js')).children.then(function(arr){
+    arr[0].toJSON().should.eql({
+      id: fixture('symlinked-dep.js'),
+      source: "require('./simple.sym')",
+      deps: {'./simple.sym': fixture('simple.sym')}
+    })
+  }).node(done)
 })
