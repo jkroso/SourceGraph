@@ -13,7 +13,6 @@ var extend = require('extensible')
 var own = Object.hasOwnProperty
 var unique = require('unique')
 var Result = require('result')
-var Module = require('module')
 var map = require('map/async')
 var path = require('path')
 var when = Result.when
@@ -138,7 +137,6 @@ lazy(MetaFile.prototype, 'requires', function(){
 lazy(MetaFile.prototype, 'json', function(){
   return when(this.source, JSON.parse)
 })
-
 
 function match(glob, file){
   return toRegex(glob).test(file)
