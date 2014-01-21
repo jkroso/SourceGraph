@@ -123,14 +123,32 @@ describe('.children', function(){
       arr[0].should.have.property('aliases').eql([fixture('simple.sym')])
     }).node(done)
   })
+
+  it('should work on package.json file', function(done){
+    var file = new File.Meta(fixture('node_modules/three/package.json'))
+      .children.then(function(arr){
+        arr.should.have.a.lengthOf(1)
+        arr[0].path.should.eql(fixture('node_modules/three/main.js'))
+      }).node(done)
+  })
 })
 
 it('.toJSON()', function(done){
-  new File(fixture('symlinked-dep.js')).children.then(function(arr){
-    arr[0].toJSON().should.eql({
+  var file = new File(fixture('symlinked-dep.js'))
+  file.children.then(function(arr){
+    file.toJSON().should.eql({
       id: fixture('symlinked-dep.js'),
       source: "require('./simple.sym')",
-      deps: {'./simple.sym': fixture('simple.sym')}
+      deps: {'./simple.sym': fixture('simple.js')},
+      aliases: undefined
+    })
+    return arr[0].children.then(function(){
+      arr[0].toJSON().should.eql({
+        id: fixture('simple.js'),
+        source: read(fixture('simple.js')),
+        aliases: [fixture('simple.sym')],
+        deps: {},
+      })
     })
   }).node(done)
 })

@@ -18,8 +18,6 @@ var path = require('path')
 var when = Result.when
 var join = path.join
 
-module.exports = File
-
 function File(path){
   this.path = path
 }
@@ -130,7 +128,10 @@ lazy(MetaFile.prototype, 'requires', function(){
   return when(this.json, function(pkg){
     var res = [pkg.main || './index']
     if (pkg.extras) res = res.concat(pkg.extras)
-    return res
+    return res.map(function(name){
+      if (/^[^.\/]/.test(name)) return './' + name
+      return name
+    })
   })
 })
 
@@ -156,3 +157,10 @@ function parents(dir){
   while (dir != '/')
   return res
 }
+
+/**
+ * expose File
+ */
+
+module.exports = exports = File
+exports.Meta = MetaFile
