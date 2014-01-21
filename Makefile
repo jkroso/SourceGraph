@@ -1,9 +1,7 @@
-REPORTER=dot
 
 test: node_modules
-	@node_modules/mocha/bin/mocha test/*.test.js \
-		--reporter $(REPORTER) \
-		--bail
+	@node_modules/hydro/bin/hydro test/*.test.js \
+	 --setup test/hydro.conf.js
 
 node_modules: package.json
 	@packin install \
