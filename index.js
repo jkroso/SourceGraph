@@ -8,12 +8,12 @@ module.exports = graph
 /**
  * parse a project from its entry file
  *
- * @param {String} entry
+ * @param {String} file
  * @return {Array}
  */
 
-function graph(entry){
-  var file = new File(entry)
+function graph(file){
+  if (!(file instanceof File)) file = new File(file)
   var seen = {}
   var out = []
   function trace(file){
