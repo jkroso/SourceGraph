@@ -22,5 +22,7 @@ function graph(file){
     out.push(file)
     return each(file.children, trace)
   }
-  return when(trace(file), function(){ return out })
+  return when(trace(file), function(){
+    return out.map(function(file){ return file.toJSON() })
+  })
 }
