@@ -117,13 +117,13 @@ lazy(File.prototype, 'children', function(){
 File.prototype.toJSON = function(){
   var resolved = this.children.value
   return {
-    source: this.source.value,
     id: this.id,
+    source: this.javascript.value,
+    aliases: own.call(this, 'aliases') ? this.aliases : undefined,
     deps: this.requires.value.reduce(function(deps, name, i){
       deps[name] = resolved[i].id
       return deps
-    }, {}),
-    aliases: own.call(this, 'aliases') ? this.aliases : undefined
+    }, {})
   }
 }
 
