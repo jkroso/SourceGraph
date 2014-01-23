@@ -10,14 +10,14 @@ it('.source', function(done){
 describe('.meta', function(){
   it('should find package.json in same directory', function(done){
     new File(fixture('simple.js')).meta.then(function(file){
-      file.path.should.eql(fixture('package.json'))
+      file.id.should.eql(fixture('package.json'))
     }).node(done)
   })
 
   it('up multiple directories', function(done){
     new File(fixture('node_modules/one/index.js'))
       .meta.then(function(file){
-        file.path.should.eql(fixture('package.json'))
+        file.id.should.eql(fixture('package.json'))
       }).node(done)
   })
 })
@@ -112,14 +112,14 @@ describe('.children', function(){
   it('should be an array of Files', function(done){
     new File(fixture('main.js')).children.then(function(arr){
       arr.should.have.a.lengthOf(1)
-      arr[0].should.have.property('path', fixture('simple.js'))
+      arr[0].should.have.property('id', fixture('simple.js'))
     }).node(done)
   })
 
   it('should follow symlinks', function(done){
     new File(fixture('symlinked-dep.js')).children.then(function(arr){
       arr.should.have.a.lengthOf(1)
-      arr[0].should.have.property('path', fixture('simple.js'))
+      arr[0].should.have.property('id', fixture('simple.js'))
       arr[0].should.have.property('aliases').eql([fixture('simple.sym')])
     }).node(done)
   })
@@ -128,7 +128,7 @@ describe('.children', function(){
     var file = new File.Meta(fixture('node_modules/three/package.json'))
       .children.then(function(arr){
         arr.should.have.a.lengthOf(1)
-        arr[0].path.should.eql(fixture('node_modules/three/main.js'))
+        arr[0].id.should.eql(fixture('node_modules/three/main.js'))
       }).node(done)
   })
 })

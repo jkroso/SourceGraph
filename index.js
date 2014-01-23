@@ -17,8 +17,8 @@ function graph(file){
   var seen = {}
   var out = []
   function trace(file){
-    if (seen[file.path]) return
-    seen[file.path] = file
+    if (seen[file.id]) return
+    seen[file.id] = file
     out.push(file)
     return each(file.children, trace)
   }

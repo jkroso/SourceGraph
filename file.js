@@ -19,7 +19,7 @@ var when = Result.when
 var join = path.join
 
 function File(path){
-  this.path = path
+  this.id = path
 }
 
 File.extend = extend
@@ -36,7 +36,7 @@ File.create = function(real){
 lazy(File.prototype, 'aliases', Array)
 
 lazy(File.prototype, 'transforms', function(){
-  var name = this.path
+  var name = this.id
   return when(this.meta, function(meta){
     return when(meta.json, function(pkg){
       var transforms = pkg.transpile || []
@@ -54,7 +54,7 @@ lazy(File.prototype, 'transforms', function(){
 
 lazy(File.prototype, 'javascript', function(){
   var mods = this.transforms
-  var path = this.path
+  var path = this.id
   return when(this.source, function(src){
     return when(mods, function(mods){
       if (!mods) return src
@@ -67,7 +67,7 @@ lazy(File.prototype, 'javascript', function(){
 }, 'enumerable')
 
 lazy(File.prototype, 'source', function(){
-  return fs.readFile(this.path, 'utf8')
+  return fs.readFile(this.id, 'utf8')
 })
 
 lazy(File.prototype, 'requires', function(){
@@ -75,8 +75,8 @@ lazy(File.prototype, 'requires', function(){
 }, 'enumerable')
 
 lazy(File.prototype, 'dependencies', function(){
-  var base = path.dirname(this.path)
-  var opts = {filename: this.path, modules: browserModules}
+  var base = path.dirname(this.id)
+  var opts = {filename: this.id, modules: browserModules}
   return map(this.requires, function(name){
     var result = new Result
     browserResolve(name, opts, function(e, path){
@@ -88,7 +88,7 @@ lazy(File.prototype, 'dependencies', function(){
 }, 'enumerable')
 
 lazy(File.prototype, 'meta', function(){
-  var files = parents(path.dirname(this.path)).map(function(dir){
+  var files = parents(path.dirname(this.id)).map(function(dir){
     return join(dir, 'package.json')
   })
   var file = detect(files, function(file){
@@ -118,9 +118,9 @@ File.prototype.toJSON = function(){
   var resolved = this.children.value
   return {
     source: this.source.value,
-    id: this.path,
+    id: this.id,
     deps: this.requires.value.reduce(function(deps, name, i){
-      deps[name] = resolved[i].path
+      deps[name] = resolved[i].id
       return deps
     }, {}),
     aliases: own.call(this, 'aliases') ? this.aliases : undefined
