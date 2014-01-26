@@ -15,27 +15,32 @@ var unique = require('unique')
 var Result = require('result')
 var map = require('map/async')
 var path = require('path')
+var unbox = Result.unbox
 var when = Result.when
 var join = path.join
 
-function File(path){
+function File(path, cache){
+  this.cache = cache || {}
   this.id = path
 }
 
 File.extend = extend
-File.cache = Object.create(null)
-File.create = function(real){
+
+var file = File.prototype
+
+file.create = function(real, Class){
   var file = this.cache[real]
   if (!(file instanceof File)) {
-    file = new this(real)
-    File.cache[real] = file
+    Class = Class || File
+    file = new Class(real, this.cache)
+    this.cache[real] = file
   }
   return file
 }
 
-lazy(File.prototype, 'aliases', Array)
+lazy(file, 'aliases', Array)
 
-lazy(File.prototype, 'transforms', function(){
+lazy(file, 'transforms', function(){
   var name = this.id
   return when(this.meta, function(meta){
     return when(meta.json, function(pkg){
@@ -52,7 +57,7 @@ lazy(File.prototype, 'transforms', function(){
   })
 })
 
-lazy(File.prototype, 'javascript', function(){
+lazy(file, 'javascript', function(){
   var mods = this.transforms
   var path = this.id
   return when(this.source, function(src){
@@ -66,15 +71,15 @@ lazy(File.prototype, 'javascript', function(){
   })
 }, 'enumerable')
 
-lazy(File.prototype, 'source', function(){
+lazy(file, 'source', function(){
   return fs.readFile(this.id, 'utf8')
-})
+}, 'enumerable')
 
-lazy(File.prototype, 'requires', function(){
+lazy(file, 'requires', function(){
   return when(requires(this.javascript), unique)
 }, 'enumerable')
 
-lazy(File.prototype, 'dependencies', function(){
+lazy(file, 'dependencies', function(){
   var base = path.dirname(this.id)
   var opts = {filename: this.id, modules: browserModules}
   return map(this.requires, function(name){
@@ -87,48 +92,51 @@ lazy(File.prototype, 'dependencies', function(){
   })
 }, 'enumerable')
 
-lazy(File.prototype, 'meta', function(){
+lazy(file, 'meta', function(){
+  var self = this
   var files = parents(path.dirname(this.id)).map(function(dir){
     return join(dir, 'package.json')
   })
   var file = detect(files, function(file){
-    return file in File.cache || isFile(file)
+    return file in self.cache || isFile(file)
   })
   return file
     .then(fs.realpath)
-    .then(MetaFile.create)
+    .then(function(real){
+      return self.create(real, MetaFile)
+    })
 })
 
-lazy(File.prototype, 'children', function(){
+lazy(file, 'children', function(){
+  var self = this
   return map(this.dependencies, function(path){
-    return File.cache[path]
-    || (File.cache[path] = fs.realpath(path).then(function(real){
-      var file = File.create(real)
+    if (path in self.cache) return self.cache[path]
+    return self.cache[path] = fs.realpath(path).then(function(real){
+      var file = self.create(real)
       // symlink
       if (real != path) {
         file.aliases.push(path)
-        File.cache[path] = file
+        self.cache[path] = file
       }
       return file
-    }))
+    })
   })
 })
 
-File.prototype.toJSON = function(){
-  var resolved = this.children.value
+file.toJSON = function(){
+  var children = unbox(this.children)
   return {
     id: this.id,
-    source: this.javascript.value,
+    source: unbox(this.javascript),
     aliases: own.call(this, 'aliases') ? this.aliases : undefined,
-    deps: this.requires.value.reduce(function(deps, name, i){
-      deps[name] = resolved[i].id
+    deps: unbox(this.requires).reduce(function(deps, name, i){
+      deps[name] = children[i].id
       return deps
     }, {})
   }
 }
 
 var MetaFile = File.extend()
-MetaFile.create = File.create.bind(MetaFile)
 
 lazy(MetaFile.prototype, 'requires', function(){
   return when(this.json, function(pkg){

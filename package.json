@@ -18,7 +18,7 @@
     "detective": "~2.3.0",
     "commander": "2.1.0",
     "colors": "0.6.0-1",
-    "result": "~0.4.6",
+    "result": "~0.4.7",
     "v8-argv": "0.2.0"
   },
   "devDependencies": {

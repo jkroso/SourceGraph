@@ -13,7 +13,7 @@ module.exports = graph
  */
 
 function graph(file){
-  if (!(file instanceof File)) file = new File(file)
+  if (!(file instanceof File)) file = new File(file, {})
   var seen = {}
   var out = []
   function trace(file){
