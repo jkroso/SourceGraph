@@ -81,7 +81,7 @@ lazy(file, 'requires', function(){
   var req = when(requires(this.javascript), unique)
   if (this.opts && this.opts.env == 'node') {
     req = filter(req, function(name){
-      return !(name in browserModules)
+      return /^[.\/]/.test(name) || resolve(this.id, name) != name
     }, this)
   }
   return req
@@ -164,6 +164,12 @@ lazy(MetaFile.prototype, 'requires', function(){
 
 lazy(MetaFile.prototype, 'json', function(){
   return when(this.source, JSON.parse)
+})
+
+lazy(MetaFile.prototype, 'javascript', function(){
+  return when(this.source, function(src){
+    return 'module.exports = ' + src
+  })
 })
 
 function match(glob, file){
