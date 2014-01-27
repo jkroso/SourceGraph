@@ -52,7 +52,7 @@ lazy(file, 'transforms', function(){
         var mods = transforms[i++]
         if (!match(glob, name)) continue
         if (typeof mods == 'string') mods = [mods]
-        return mods.map(resolve.bind(null, path.dirname(name)))
+        return mods.map(resolve.bind(null, name))
       }
       return []
     })
@@ -82,19 +82,19 @@ lazy(file, 'requires', function(){
   if (this.opts && this.opts.env == 'node') {
     req = filter(req, function(name){
       return !(name in browserModules)
-    })
+    }, this)
   }
   return req
 }, 'enumerable')
 
 lazy(file, 'dependencies', function(){
-  var base = path.dirname(this.id)
+  var path = this.id
   if (this.opts && this.opts.env == 'node') {
     return map(this.requires, function(name){
-      return resolve(base, name)
+      return resolve(path, name)
     })
   }
-  var opts = {filename: this.id, modules: browserModules}
+  var opts = {filename: path, modules: browserModules}
   return map(this.requires, function(name){
     var result = new Result
     browserResolve(name, opts, function(e, path){
