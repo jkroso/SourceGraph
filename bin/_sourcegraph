@@ -8,6 +8,7 @@ program.version(require('../package').version)
   .usage('[options] <entry>')
   .option('-b, --beautify', 'present the output for humans')
   .option('-l, --list', 'list all files in the graph')
+  .option('-n, --node', 'set env to node')
   .option('-d, debug', 'sourcegraph takes any of node\'s debug options')
   .on('--help', function () {
     write('  Examples: ')
@@ -23,8 +24,10 @@ if (!program.args.length) program.help()
 // Convert to absolute paths
 var entry = path.resolve(program.args[0])
 
-graph(entry)
-.read(function(files){
+var options = {env:'browser'}
+if (program.node) options.env = 'node'
+
+graph(entry, options).read(function(files){
   var data = program.list
     ? files.map(function(file){ return file.id })
     : files
