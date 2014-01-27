@@ -26,7 +26,7 @@ var entry = path.resolve(program.args[0])
 graph(entry)
 .read(function(files){
   var data = program.list
-    ? files.map(function(file){ return file.path })
+    ? files.map(function(file){ return file.id })
     : files
   write(JSON.stringify(data, null, program.beautify ? 2 : 0))
 })
