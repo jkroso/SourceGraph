@@ -7,6 +7,7 @@ var toRegex = require('glob-to-regexp')
 var resolve = require('resolve-module')
 var detect = require('detect/series')
 var reduce = require('reduce/series')
+var filter = require('filter/async')
 var lazy = require('lazy-property')
 var fs = require('lift-result/fs')
 var extend = require('extensible')
@@ -77,7 +78,13 @@ lazy(file, 'source', function(){
 }, 'enumerable')
 
 lazy(file, 'requires', function(){
-  return when(requires(this.javascript), unique)
+  var req = when(requires(this.javascript), unique)
+  if (this.opts && this.opts.env == 'node') {
+    req = filter(req, function(name){
+      return !(name in browserModules)
+    })
+  }
+  return req
 }, 'enumerable')
 
 lazy(file, 'dependencies', function(){

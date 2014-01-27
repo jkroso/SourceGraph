@@ -11,6 +11,7 @@ it('should return a list of modules', function(done){
 
 it('specializing for node environments', function(done){
   graph(fixture('x-platform.js'), {env: 'node'}).then(function(files){
+    files.should.have.a.lengthOf(2)
     files[0].id.should.eql(fixture('x-platform.js'))
     files[1].id.should.eql(fixture('node_modules/x-platform/node.js'))
   }).node(done)
@@ -18,6 +19,7 @@ it('specializing for node environments', function(done){
 
 it('specializing for browser environments', function(done){
   graph(fixture('x-platform.js')).then(function(files){
+    files.should.have.a.lengthOf(2)
     files[0].id.should.eql(fixture('x-platform.js'))
     files[1].id.should.eql(fixture('node_modules/x-platform/browser.js'))
   }).node(done)

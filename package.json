@@ -7,6 +7,7 @@
     "detect": "jkroso/detect#0.3.4",
     "unique": "jkroso/unique#0.0.1",
     "reduce": "jkroso/reduce#0.1.4",
+    "filter": "jkroso/filter#0.2.1",
     "merge": "yields/merge#2f357cb",
     "browser-resolve": "~1.2.2",
     "map": "jkroso/map#0.2.10",
