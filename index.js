@@ -2,6 +2,7 @@
 var each = require('foreach/async')
 var when = require('result').when
 var File = require('./file')
+var merge = require('merge')
 
 module.exports = graph
 
@@ -9,11 +10,13 @@ module.exports = graph
  * parse a project from its entry file
  *
  * @param {String} file
+ * @param {Object} [options]
  * @return {Array}
  */
 
-function graph(file){
+function graph(file, opts){
   if (!(file instanceof File)) file = new File(file, {})
+  file.opts = merge({env: 'browser'}, opts)
   var seen = {}
   var out = []
   function trace(file){

@@ -33,6 +33,7 @@ file.create = function(real, Class){
   if (!(file instanceof File)) {
     Class = Class || File
     file = new Class(real, this.cache)
+    file.opts = this.opts
     this.cache[real] = file
   }
   return file
