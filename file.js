@@ -82,6 +82,11 @@ lazy(file, 'requires', function(){
 
 lazy(file, 'dependencies', function(){
   var base = path.dirname(this.id)
+  if (this.opts && this.opts.env == 'node') {
+    return map(this.requires, function(name){
+      return resolve(base, name)
+    })
+  }
   var opts = {filename: this.id, modules: browserModules}
   return map(this.requires, function(name){
     var result = new Result
