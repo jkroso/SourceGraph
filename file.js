@@ -58,7 +58,7 @@ lazy(file, 'transforms', function(){
         if (!Array.isArray(mods)) mods = [mods]
         return mods.map(function(mod){
           if (typeof mod != 'string') return mod
-          return resolve(name, mod)
+          return require(resolve(name, mod))
         })
       }
       return []
@@ -72,9 +72,8 @@ lazy(file, 'javascript', function(){
   return when(this.source, function(src){
     return when(mods, function(mods){
       if (!mods) return src
-      return reduce(mods, function(src, mod){
-        if (typeof mod == 'string') mod = require(mod)
-        return mod(src, path)
+      return reduce(mods, function(src, fn){
+        return fn(src, path)
       }, src)
     })
   })

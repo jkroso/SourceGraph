@@ -26,8 +26,8 @@ describe('.transforms', function(){
   it('should resolve to a list of modules', function(done){
     new File(fixture('compose.trans'))
       .transforms.should.become([
-        fixture('node_modules/to-object-transform.js'),
-        fixture('node_modules/simple-transform.js')
+        require(fixture('node_modules/to-object-transform.js')),
+        require(fixture('node_modules/simple-transform.js'))
       ]).notify(done)
   })
 
