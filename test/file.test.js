@@ -131,6 +131,13 @@ describe('.children', function(){
         arr[0].id.should.eql(fixture('node_modules/three/main.js'))
       }).node(done)
   })
+
+  it('should be able to require json files', function(done){
+    new File(fixture('json.js')).children.then(function(arr){
+      arr.should.have.a.lengthOf(1)
+      arr[0].should.have.property('id', fixture('package.json'))
+    }).node(done)
+  })
 })
 
 it('.toJSON()', function(done){

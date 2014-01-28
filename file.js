@@ -89,15 +89,22 @@ lazy(file, 'requires', function(){
 
 lazy(file, 'dependencies', function(){
   var path = this.id
+
   if (this.opts && this.opts.env == 'node') {
     return map(this.requires, function(name){
       return resolve(path, name)
     })
   }
-  var opts = {filename: path, modules: browserModules}
+
+  var options = {
+    filename: path,
+    modules: browserModules,
+    extensions: ['.js', '.json']
+  }
+
   return map(this.requires, function(name){
     var result = new Result
-    browserResolve(name, opts, function(e, path){
+    browserResolve(name, options, function(e, path){
       if (e) result.error(e)
       else result.write(path)
     })
