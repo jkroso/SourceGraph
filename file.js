@@ -44,15 +44,22 @@ lazy(file, 'aliases', Array)
 
 lazy(file, 'transforms', function(){
   var name = this.id
+  var opts = this.opts
   return when(this.meta, function(meta){
     return when(meta.json, function(pkg){
       var transforms = pkg.transpile || []
+      if (opts && Array.isArray(opts.transpile)) {
+        transforms = transforms.concat(opts.transpile)
+      }
       for (var i = 0, len = transforms.length; i < len;) {
         var glob = transforms[i++]
         var mods = transforms[i++]
         if (!match(glob, name)) continue
-        if (typeof mods == 'string') mods = [mods]
-        return mods.map(resolve.bind(null, name))
+        if (!Array.isArray(mods)) mods = [mods]
+        return mods.map(function(mod){
+          if (typeof mod != 'string') return mod
+          return resolve(name, mod)
+        })
       }
       return []
     })

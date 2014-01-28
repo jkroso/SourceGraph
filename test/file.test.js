@@ -30,6 +30,15 @@ describe('.transforms', function(){
         fixture('node_modules/simple-transform.js')
       ]).notify(done)
   })
+
+  it('global transforms', function(done){
+    var file = new File(fixture('package.json'))
+    var json = function(src){ return 'module.exports =' + src }
+    file.opts = {'transpile': ['*.json', json]}
+    file.transforms.then(function(arr){
+      arr.should.eql([json])
+    }).node(done)
+  })
 })
 
 describe('.javascript', function(){
