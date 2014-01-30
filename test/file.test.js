@@ -1,6 +1,7 @@
 
 var core = require('browser-builtins')
 var File = require('../file')
+var fs = require('fs')
 
 it('.source', function(done){
   var file = fixture('simple.js')
@@ -19,6 +20,13 @@ describe('.meta', function(){
       .meta.then(function(file){
         file.id.should.eql(fixture('package.json'))
       }).node(done)
+  })
+
+  it('should produce a nice error if it can\'t find a meta file', function(done){
+    fs.writeFileSync('/tmp/index.js', '// nothing')
+    new File('/tmp/index.js').meta.then(null, function(e){
+      e.message.should.match(/couldn't find meta file/i)
+    }).node(done)
   })
 })
 

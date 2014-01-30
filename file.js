@@ -127,7 +127,9 @@ lazy(file, 'meta', function(){
     return file in self.cache || isFile(file)
   })
   return file
-    .then(fs.realpath)
+    .then(fs.realpath, function(){
+      throw new Error('couldn\'t find meta file for ' + self.id)
+    })
     .then(function(real){
       return self.create(real, MetaFile)
     })
