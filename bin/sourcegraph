@@ -1,2 +1,40 @@
 #!/usr/bin/env node
-require('v8-argv')(__dirname + '/_sourcegraph')
+if (require('v8-argv')) return;
+
+var program = require('commander')
+var path = require('path')
+var graph = require('..')
+
+program.version(require('../package').version)
+  .usage('[options] <entry>')
+  .option('-b, --beautify', 'present the output for humans')
+  .option('-l, --list', 'list all files in the graph')
+  .option('-n, --node', 'set env to node')
+  .option('-d, debug', 'sourcegraph takes any of node\'s debug options')
+  .on('--help', function () {
+    write('  Examples: ')
+    write('')
+    write('    # outputs a JSON array of modules')
+    write('    $ sourcegraph examples/husband.js')
+    write('')
+  })
+  .parse(process.argv)
+
+if (!program.args.length) program.help()
+
+// Convert to absolute paths
+var entry = path.resolve(program.args[0])
+
+var options = {env:'browser'}
+if (program.node) options.env = 'node'
+
+graph(entry, options).read(function(files){
+  var data = program.list
+    ? files.map(function(file){ return file.id })
+    : files
+  write(JSON.stringify(data, null, program.beautify ? 2 : 0))
+})
+
+function write(s){
+  process.stdout.write(s + '\n')
+}

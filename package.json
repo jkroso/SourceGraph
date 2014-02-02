@@ -21,7 +21,7 @@
     "commander": "2.1.0",
     "colors": "0.6.0-1",
     "result": "~0.4.7",
-    "v8-argv": "0.2.0"
+    "v8-argv": "jkroso/v8-argv#1.0.0"
   },
   "devDependencies": {
     "hydro-file-suite": "*",
@@ -34,9 +34,6 @@
     "chai": "*"
   },
   "repository": "git://github.com/jkroso/sourcegraph.git",
-  "bin": {
-    "sourcegraph": "bin/sourcegraph",
-    "_sourcegraph": "bin/_sourcegraph"
-  },
+  "bin": { "sourcegraph": "bin/sourcegraph"},
   "files": ["file.js", "index.js", "bin"]
 }
