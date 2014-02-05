@@ -2,7 +2,6 @@
 var lift = require('lift-result')
 var browserModules = require('browser-builtins')
 var browserResolve = require('browser-resolve')
-var requires = lift(require('detective'))
 var natives = process.binding('natives')
 var toRegex = require('glob-to-regexp')
 var resolve = require('resolve-module')
@@ -16,10 +15,15 @@ var own = Object.hasOwnProperty
 var unique = require('unique')
 var Result = require('result')
 var map = require('map/async')
+var mine = require('mine')
 var path = require('path')
 var unbox = Result.unbox
 var when = Result.when
 var join = path.join
+
+var requires = lift(function(js){
+  return mine(js).map(function(r){ return r.name })
+})
 
 function File(path, cache){
   this.cache = cache || {}
