@@ -1,103 +1,50 @@
 
 # sourcegraph
 
-  Pull you modular project into memory so you can do stuff with it. sourcegraph is fairly hard working, it only asks for an entry file as input. It will add this file to the graph then figure out its dependencies and recur on those until no dependencies remain. In order to do this it needs to understand something about the type of files its walking. For this it uses plugins. For example the "nodeish" plugin teaches sourcegraph about javascript and json files.
+  Sourcegraph takes an entry file and walks its dependency graph recursively to produce a graph data structure. This should make it easy to introspect your project or compile production builds etc..
 
-  Its similar to [module-deps](https://github.com/substack/module-deps) for [browserify](https://github.com/substack/node-browserify) but isn't as specialized towards node.js projects and doesn't limit itself by trying hopelessly to stream everything.
+  Its similar to [module-deps](https://github.com/substack/module-deps) and is even API compatable in a lot of ways but doesn't limit itself by trying hopelessly to stream everything.
 
-## Getting Started
+## Installation
 
-_With npm_  
-
-	$ npm install -g sourcegraph
-
-## Data format
-
-  the command line version of sourcegraph outputs a JSON array of file objects as its representation of your project. Each object contains the following keys:
-
-+ path: an absolute path
-+ text: the files content
-+ lastModified: timestamp
-+ requires: raw dependency calls e.g. `["./dep1.jade", "dep2"]`
-+ parents: absolute paths to files depending on this one
-+ children: requires expanded to their fully resolved paths
-+ aliases: symlinks pointing to this file
-
-## Dependency resolution algorithm
-
-  When sourcegraph runs into a dependency with no leading path delimiters and isn't a remote URL it considers this a "package lookup". Its package lookup procedure is almost identical to node.js's with the exception that it doesn't give built in modules any special priority (thats a feature). That is it will walk up the directory hierarchy from the directory the "package request" was made from and will look for the package under a specific sub-directory. By default this directory is "node_modules", though is configurable. So if a file at "/a/b/c.js" required package "d", sourcegraph would check
-
-	/a/b/c/node_modules/d
-	/a/b/node_modules/d
-	/a/node_modules/d
-	/node_modules/d
-
-  if it gets to the last one without success it throws an error.
+```sh
+$ npm install sourcegraph [--global]
+```
 
 ## API
 
-### Graph()
+```js
+var graph = require('sourcegraph')
+```
 
-  the Graph class
+### graph(entry)
 
-### Graph.add(path)
-
-  add a file and it dependencies to `this` graph
-
-### Graph.which(base, path)
-
-  determine which file a `require(req)` from `dir`
-  would result in. Only cached modules are considered
-
-### Graph.get(base, path)
-
-  Retrieve the module stored within the sourcegraph
-
-### Graph.has(base, path)
-
-  Is the file already listed in the sourcegraph
-
-### Graph.clear()
-
-  remove all files so the graph can be rebuilt
-
-### Graph.addFSReader(fn)
-
-  Add package resolver that operates over the filesystem
-
-### Graph.addHashReader(fn)
-
-  Add package resolver that operates over a file cache
-
-### Graph.addType(fn)
-
-  Add a module definition.
+  takes an entry path and returns an `Array` of file objects
 
 ```js
-function Javascript (file) {
-  this.path = file.path
-  this.text = file.text
-  this.requires = function () {
-    return detective(this.text)
-  }
-}
-Javascript.test = function (file) {
-  var match = file.path.match(/\.js$/)
-  return match ? 1 : 0
-}
-graph.addType(Javascript)
+graph(__dirname + '/index.js')
 ```
 
-### Graph.use(name:String|Object)
+## CLI
 
-  Load a plugin. A plugin is just a grab bag of stuff
-
-## Running the tests
-
-```bash
-$ make test
+```sh
+$ sourcegraph index.js
 ```
 
-## License 
+## Data format
 
-[MIT](License)
+each file objects looks like this:
+
+```js
+{
+  id: "/full/path/to/index.js",
+  source: 'the files source transpiled to JS according to its packages specification',
+  deps: {
+    "./dep1": "/full/path/to/dep1.js",
+    "dep2": "/full/path/to/node_modules/dep2"
+  },
+  aliases: [
+    '/any/relavant/symlinks/pointing/to/this/file'
+  ]
+}
+```
