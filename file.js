@@ -3,6 +3,7 @@ var lift = require('lift-result')
 var browserModules = require('browser-builtins')
 var browserResolve = require('browser-resolve')
 var requires = lift(require('detective'))
+var natives = process.binding('natives')
 var toRegex = require('glob-to-regexp')
 var resolve = require('resolve-module')
 var detect = require('detect/series')
@@ -87,7 +88,7 @@ lazy(file, 'requires', function(){
   var req = when(requires(this.javascript), unique)
   if (this.opts && this.opts.env == 'node') {
     req = filter(req, function(name){
-      return /^[.\/]/.test(name) || resolve(this.id, name) != name
+      return /^[.\/]/.test(name) || !(name in natives)
     }, this)
   }
   return req
