@@ -68,7 +68,7 @@ lazy(file, 'transforms', function(){
       }
       return []
     })
-  })
+  }, function(){ return [] })
 })
 
 lazy(file, 'javascript', function(){

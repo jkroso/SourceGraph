@@ -47,6 +47,13 @@ describe('.transforms', function(){
       arr.should.eql([json])
     }).node(done)
   })
+
+  it('should be empty if it can\'t find a meta file', function(done){
+    fs.writeFileSync('/tmp/index.js', '// nothing')
+    new File('/tmp/index.js').transforms.then(function(arr){
+      arr.should.be.empty
+    }).node(done)
+  })
 })
 
 describe('.javascript', function(){
