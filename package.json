@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "dependencies": {
     "extensible": "jkroso/extensible#0.3.0",
     "foreach": "jkroso/forEach#0.8.10",
@@ -34,6 +34,7 @@
     "chai": "*"
   },
   "repository": "git://github.com/jkroso/sourcegraph.git",
+  "files": ["file.js", "index.js", "bin", "transforms"],
   "bin": { "sourcegraph": "bin/sourcegraph"},
-  "files": ["file.js", "index.js", "bin"]
+  "author": "Jake Rosoman"
 }
