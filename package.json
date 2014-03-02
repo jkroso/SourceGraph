@@ -20,8 +20,8 @@
     "result-type": "1.0.0",
     "resolve-module": "*",
     "commander": "2.1.0",
-    "colors": "0.6.0-1",
-    "result": "~1.0.1"
+    "result": "~1.0.1",
+    "domify": "*"
   },
   "devDependencies": {
     "hydro-file-suite": "*",

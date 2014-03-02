@@ -63,6 +63,9 @@ lazy(file, 'transforms', function(){
         if (!Array.isArray(mods)) mods = [mods]
         return mods.map(function(mod){
           if (typeof mod != 'string') return mod
+          if (/^!sourcegraph\/(\w+->\w+)/.test(mod)) {
+            return require(__dirname + '/transforms/' + RegExp.$1)
+          }
           return require(resolve(name, mod))
         })
       }
