@@ -66,7 +66,11 @@ lazy(file, 'transforms', function(){
           if (/^!sourcegraph\/(\w+->\w+)/.test(mod)) {
             return require(__dirname + '/transforms/' + RegExp.$1)
           }
-          return require(resolve(name, mod))
+          try {
+            return require(resolve(meta.id, mod))
+          } catch (e) {
+            throw new Error('requiring ' + mod + ' from ' + meta.id)
+          }
         })
       }
       return []
