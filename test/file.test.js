@@ -3,56 +3,54 @@ var core = require('browser-builtins')
 var File = require('../file')
 var fs = require('fs')
 
-it('.source', function(done){
+it('.source', function*(){
   var file = fixture('simple.js')
-  new File(file).source.should.become(read(file)).notify(done)
+  var js = yield new File(file).source
+  js.should.eql(read(file))
 })
 
 describe('.meta', function(){
-  it('should find package.json in same directory', function(done){
-    new File(fixture('simple.js')).meta.then(function(file){
-      file.id.should.eql(fixture('package.json'))
-    }).node(done)
+  it('should find package.json in same directory', function*(){
+    var file = yield new File(fixture('simple.js')).meta
+    file.id.should.eql(fixture('package.json'))
   })
 
-  it('up multiple directories', function(done){
-    new File(fixture('node_modules/one/index.js'))
-      .meta.then(function(file){
-        file.id.should.eql(fixture('package.json'))
-      }).node(done)
+  it('up multiple directories', function*(){
+    var file = yield new File(fixture('node_modules/one/index.js')).meta
+    file.id.should.eql(fixture('package.json'))
   })
 
-  it('should produce a nice error if it can\'t find a meta file', function(done){
+  it('should produce a nice error if it can\'t find a meta file', function*(){
     fs.writeFileSync('/tmp/index.js', '// nothing')
-    new File('/tmp/index.js').meta.then(null, function(e){
+    try {
+      yield new File('/tmp/index.js').meta
+      throw new Error('should not be reach')
+    } catch (e) {
       e.message.should.match(/couldn't find meta file/i)
-    }).node(done)
+    }
   })
 })
 
 describe('.transforms', function(){
-  it('should resolve to a list of modules', function(done){
-    new File(fixture('compose.trans'))
-      .transforms.should.become([
-        require(fixture('node_modules/to-object-transform.js')),
-        require(fixture('node_modules/simple-transform.js'))
-      ]).notify(done)
+  it('should resolve to a list of modules', function*(){
+    var arr = yield new File(fixture('compose.trans')).transforms
+    arr.should.eql([
+      require(fixture('node_modules/to-object-transform.js')),
+      require(fixture('node_modules/simple-transform.js'))
+    ])
   })
 
-  it('global transforms', function(done){
+  it('global transforms', function*(){
     var file = new File(fixture('package.json'))
     var json = function(src){ return 'module.exports =' + src }
-    file.opts = {'transpile': ['*.json', json]}
-    file.transforms.then(function(arr){
-      arr.should.eql([json])
-    }).node(done)
+    file.opts = {'transpile': ['*.json', json]};
+    (yield file.transforms).should.eql([json])
   })
 
-  it('should be empty if it can\'t find a meta file', function(done){
+  it('should be empty if it can\'t find a meta file', function*(){
     fs.writeFileSync('/tmp/index.js', '// nothing')
-    new File('/tmp/index.js').transforms.then(function(arr){
-      arr.should.be.empty
-    }).node(done)
+    var arr = yield new File('/tmp/index.js').transforms
+    arr.should.be.empty
   })
 })
 
@@ -63,21 +61,22 @@ describe('.javascript', function(){
     file.should.include.key('javascript')
   })
 
-  it('no transforms', function(done){
+  it('no transforms', function*(){
     var file = fixture('simple.js')
-    new File(file).javascript.should.become(read(file)).notify(done)
+    var js = yield new File(file).javascript
+    js.should.eql(read(file))
   })
 
-  it('single transform', function(done){
+  it('single transform', function*(){
     var file = fixture('simple.trans')
-    new File(file).javascript.should.become(read(file) + file).notify(done)
+    var js = yield new File(file).javascript
+    js.should.eql(read(file) + file)
   })
 
-  it('multiple transforms', function(done){
+  it('multiple transforms', function*(){
     var file = fixture('compose.trans')
-    new File(file).javascript
-      .should.become(JSON.stringify({src: read(file), id: file}) + file)
-      .notify(done)
+    var js = yield new File(file).javascript
+    js.should.eql(JSON.stringify({src: read(file), id: file}) + file)
   })
 })
 
@@ -96,90 +95,82 @@ describe('.requires', function(){
 })
 
 describe('.dependencies', function(){
-  it('should resolve relative dependencies', function(done){
-    new File(fixture('main.js')).dependencies
-      .should.become([fixture('simple.js')])
-      .notify(done)
+  it('should resolve relative dependencies', function*(){
+    var file = new File(fixture('main.js'));
+    (yield file.dependencies).should.eql([fixture('simple.js')])
   })
 
-  it('should resolve naked modules', function(done){
-    new File(fixture('r-naked-mod.js')).dependencies
-      .should.become([fixture('node_modules/two.js')])
-      .notify(done)
+  it('should resolve naked modules', function*(){
+    var file = new File(fixture('r-naked-mod.js'));
+    (yield file.dependencies).should.eql([fixture('node_modules/two.js')])
   })
 
-  it('should resolve an implicit "index.js" module', function(done){
-    new File(fixture('r-index-mod.js')).dependencies
-      .should.become([fixture('node_modules/one/index.js')])
-      .notify(done)
+  it('should resolve an implicit "index.js" module', function*(){
+    var file = new File(fixture('r-index-mod.js'))
+    var arr = yield file.dependencies
+    arr.should.eql([fixture('node_modules/one/index.js')])
   })
 
-  it('should resolve the main file in a package', function(done){
-    new File(fixture('r-main-mod.js')).dependencies
-      .should.become([fixture('node_modules/three/main.js')])
-      .notify(done)
+  it('should resolve the main file in a package', function*(){
+    var file = new File(fixture('r-main-mod.js'))
+    var arr = yield file.dependencies
+    arr.should.eql([fixture('node_modules/three/main.js')])
   })
 
-  it('should resolve node core modules', function(done){
-    new File(fixture('node-core.js')).dependencies
-      .should.become([
-        core['fs'],
-        core['http'],
-        core['dns'],
-        core['path']
-      ])
-      .notify(done)
+  it('should resolve node core modules', function*(){
+    var file = new File(fixture('node-core.js'));
+    (yield file.dependencies).should.eql([
+      core['fs'],
+      core['http'],
+      core['dns'],
+      core['path']
+    ])
   })
 })
 
 describe('.children', function(){
-  it('should be an array of Files', function(done){
-    new File(fixture('main.js')).children.then(function(arr){
-      arr.should.have.a.lengthOf(1)
-      arr[0].should.have.property('id', fixture('simple.js'))
-    }).node(done)
+  it('should be an array of Files', function*(){
+    var file = new File(fixture('main.js'))
+    var arr = yield file.children
+    arr.should.have.a.lengthOf(1)
+    arr[0].should.have.property('id', fixture('simple.js'))
   })
 
-  it('should follow symlinks', function(done){
-    new File(fixture('symlinked-dep.js')).children.then(function(arr){
-      arr.should.have.a.lengthOf(1)
-      arr[0].should.have.property('id', fixture('simple.js'))
-      arr[0].should.have.property('aliases').eql([fixture('simple.sym')])
-    }).node(done)
+  it('should follow symlinks', function*(){
+    var file = new File(fixture('symlinked-dep.js'))
+    var arr = yield file.children
+    arr.should.have.a.lengthOf(1)
+    arr[0].should.have.property('id', fixture('simple.js'))
+    arr[0].should.have.property('aliases').eql([fixture('simple.sym')])
   })
 
-  it('should work on package.json file', function(done){
+  it('should work on package.json file', function*(){
     var file = new File.Meta(fixture('node_modules/three/package.json'))
-      .children.then(function(arr){
-        arr.should.have.a.lengthOf(1)
-        arr[0].id.should.eql(fixture('node_modules/three/main.js'))
-      }).node(done)
+    var arr = yield file.children
+    arr.should.have.a.lengthOf(1)
+    arr[0].id.should.eql(fixture('node_modules/three/main.js'))
   })
 
-  it('should be able to require json files', function(done){
-    new File(fixture('json.js')).children.then(function(arr){
-      arr.should.have.a.lengthOf(1)
-      arr[0].should.have.property('id', fixture('package.json'))
-    }).node(done)
+  it('should be able to require json files', function*(){
+    var arr = yield new File(fixture('json.js')).children
+    arr.should.have.a.lengthOf(1)
+    arr[0].should.have.property('id', fixture('package.json'))
   })
 })
 
-it('.toJSON()', function(done){
+it('.toJSON()', function*(){
   var file = new File(fixture('symlinked-dep.js'))
-  file.children.then(function(arr){
-    file.toJSON().should.eql({
-      id: fixture('symlinked-dep.js'),
-      source: "require('./simple.sym')",
-      deps: {'./simple.sym': fixture('simple.js')},
-      aliases: undefined
-    })
-    return arr[0].children.then(function(){
-      arr[0].toJSON().should.eql({
-        id: fixture('simple.js'),
-        source: read(fixture('simple.js')),
-        aliases: [fixture('simple.sym')],
-        deps: {},
-      })
-    })
-  }).node(done)
+  var arr = yield file.children
+  file.toJSON().should.eql({
+    id: fixture('symlinked-dep.js'),
+    source: "require('./simple.sym')",
+    deps: {'./simple.sym': fixture('simple.js')},
+    aliases: undefined
+  });
+  (yield arr[0].toJSON()).should.eql({
+    id: fixture('simple.js'),
+    source: read(fixture('simple.js')),
+    aliases: [fixture('simple.sym')],
+    deps: {}
+  })
 })

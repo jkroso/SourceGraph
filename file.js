@@ -1,29 +1,40 @@
 
-var lift = require('lift-result')
+var lift = require('lift-result/cps')
+var browserResolve = lift(require('browser-resolve'))
 var browserModules = require('browser-builtins')
-var browserResolve = require('browser-resolve')
 var natives = process.binding('natives')
 var toRegex = require('glob-to-regexp')
 var resolve = require('resolve-module')
 var detect = require('detect/series')
 var reduce = require('reduce/series')
-var filter = require('filter/async')
 var lazy = require('lazy-property')
 var fs = require('lift-result/fs')
 var extend = require('extensible')
 var own = Object.hasOwnProperty
 var unique = require('unique')
-var Result = require('result')
 var map = require('map/async')
+var co = require('result-co')
 var mine = require('mine')
 var path = require('path')
-var unbox = Result.unbox
-var when = Result.when
 var join = path.join
 
-var requires = lift(function(js){
-  return mine(js).map(function(r){ return r.name })
+function getName(obj){ return obj.name }
+
+var isFile = co(function*(path){
+  try { return (yield fs.stat(path)).isFile() }
+  catch (_) { return false }
 })
+
+function match(glob, file){
+  return toRegex(glob).test(file)
+}
+
+function dirs(dir){
+  var res = []
+  do res.push(dir = path.dirname(dir))
+  while (dir != '/')
+  return res
+}
 
 function File(path, cache){
   this.cache = cache || {}
@@ -47,105 +58,90 @@ file.create = function(real, Class){
 
 lazy(file, 'aliases', Array)
 
-lazy(file, 'transforms', function(){
+lazy(file, 'transforms', co(function*(){
   var name = this.id
-  var opts = this.opts
-  return when(this.meta, function(meta){
-    return when(meta.json, function(pkg){
-      var transforms = pkg.transpile || []
-      if (opts && Array.isArray(opts.transpile)) {
-        transforms = transforms.concat(opts.transpile)
+  try { var meta = yield this.meta }
+  catch (_) { return [] }
+  var pkg = yield meta.json
+  var transforms = pkg.transpile || []
+  if (this.opts && Array.isArray(this.opts.transpile)) {
+    transforms = transforms.concat(this.opts.transpile)
+  }
+  for (var i = 0, len = transforms.length; i < len;) {
+    var glob = transforms[i++]
+    var mods = transforms[i++]
+    if (!match(glob, name)) continue
+    if (!Array.isArray(mods)) mods = [mods]
+    return mods.map(function(mod){
+      if (typeof mod != 'string') return mod
+      if (/^!sourcegraph\/(\w+->\w+)/.test(mod)) {
+        return require(__dirname + '/transforms/' + RegExp.$1)
       }
-      for (var i = 0, len = transforms.length; i < len;) {
-        var glob = transforms[i++]
-        var mods = transforms[i++]
-        if (!match(glob, name)) continue
-        if (!Array.isArray(mods)) mods = [mods]
-        return mods.map(function(mod){
-          if (typeof mod != 'string') return mod
-          if (/^!sourcegraph\/(\w+->\w+)/.test(mod)) {
-            return require(__dirname + '/transforms/' + RegExp.$1)
-          }
-          try {
-            return require(resolve(meta.id, mod))
-          } catch (e) {
-            throw new Error('requiring ' + mod + ' from ' + meta.id)
-          }
-        })
+      try {
+        return require(resolve(meta.id, mod))
+      } catch (_) {
+        throw new Error('requiring ' + mod + ' from ' + meta.id)
       }
-      return []
     })
-  }, function(){ return [] })
-})
+  }
+  return []
+}))
 
-lazy(file, 'javascript', function(){
-  var mods = this.transforms
+lazy(file, 'javascript', co(function*(){
+  var mods = yield this.transforms
+  if (!mods) return this.source
   var path = this.id
-  return when(this.source, function(src){
-    return when(mods, function(mods){
-      if (!mods) return src
-      return reduce(mods, function(src, fn){
-        return fn(src, path)
-      }, src)
-    })
-  })
-}, 'enumerable')
+  return reduce(mods, function(src, fn){
+    return fn(src, path)
+  }, yield this.source)
+}), 'enumerable')
 
 lazy(file, 'source', function(){
   return fs.readFile(this.id, 'utf8')
 }, 'enumerable')
 
-lazy(file, 'requires', function(){
-  var req = when(requires(this.javascript), unique)
-  if (this.opts && this.opts.env == 'node') {
-    req = filter(req, function(name){
-      return /^[.\/]/.test(name) || !(name in natives)
-    }, this)
-  }
-  return req
-}, 'enumerable')
+lazy(file, 'requires', co(function*(){
+  var js = yield this.javascript
+  var req = unique(mine(js).map(getName))
+  if (!this.opts || this.opts.env != 'node') return req
+  return req.filter(function(name){
+    return /^[.\/]/.test(name) || !(name in natives)
+  })
+}), 'enumerable')
 
-lazy(file, 'dependencies', function(){
-  var path = this.id
+lazy(file, 'dependencies', co(function*(){
+  var req = yield this.requires
 
   if (this.opts && this.opts.env == 'node') {
-    return map(this.requires, function(name){
-      return resolve(path, name)
-    })
+    return req.map(resolve.bind(null, this.id))
   }
 
   var options = {
-    filename: path,
+    filename: this.id,
     modules: browserModules,
     extensions: ['.js', '.json']
   }
 
-  return map(this.requires, function(name){
-    var result = new Result
-    browserResolve(name, options, function(e, path){
-      if (e) result.error(e)
-      else result.write(path)
-    })
-    return result
+  return map(req, function(name){
+    return browserResolve(name, options)
   })
-}, 'enumerable')
+}), 'enumerable')
 
-lazy(file, 'meta', function(){
+lazy(file, 'meta', co(function*(){
   var self = this
-  var files = parents(path.dirname(this.id)).map(function(dir){
+  var files = dirs(this.id).map(function(dir){
     return join(dir, 'package.json')
   })
-  var file = detect(files, function(file){
-    return file in self.cache || isFile(file)
-  })
-  return file
-    .then(fs.realpath, function(){
-      throw new Error('couldn\'t find meta file for ' + self.id)
+  try {
+    var file = yield detect(files, function(file){
+      return file in self.cache || isFile(file)
     })
-    .then(function(real){
-      return self.create(real, MetaFile)
-    })
-})
+  } catch (_) {
+    throw new Error('couldn\'t find meta file for ' + self.id)
+  }
+  var real = yield fs.realpath(file)
+  return this.create(real, MetaFile)
+}))
 
 lazy(file, 'children', function(){
   var self = this
@@ -153,7 +149,7 @@ lazy(file, 'children', function(){
     if (path in self.cache) return self.cache[path]
     return self.cache[path] = fs.realpath(path).then(function(real){
       var file = self.create(real)
-      // symlink
+      // is symlinked
       if (real != path) {
         file.aliases.push(path)
         self.cache[path] = file
@@ -163,64 +159,38 @@ lazy(file, 'children', function(){
   })
 })
 
-file.toJSON = function(){
-  var children = unbox(this.children)
+file.toJSON = co(function*(){
+  var children = yield this.children
   return {
     id: this.id,
-    source: unbox(this.javascript),
+    source: yield this.javascript,
     aliases: own.call(this, 'aliases') ? this.aliases : undefined,
-    deps: unbox(this.requires).reduce(function(deps, name, i){
+    deps: (yield this.requires).reduce(function(deps, name, i){
       deps[name] = children[i].id
       return deps
     }, {})
   }
-}
+})
 
 var MetaFile = File.extend()
 
-lazy(MetaFile.prototype, 'requires', function(){
-  return when(this.json, function(pkg){
-    var res = [pkg.main || './index']
-    if (pkg.extras) res = res.concat(pkg.extras)
-    return res.map(function(name){
-      if (/^[^.\/]/.test(name)) return './' + name
-      return name
-    })
+lazy(MetaFile.prototype, 'requires', co(function*(){
+  var pkg = yield this.json
+  var res = [pkg.main || './index']
+  if (pkg.extras) res = res.concat(pkg.extras)
+  return res.map(function(name){
+    if (/^[^.\/]/.test(name)) return './' + name
+    return name
   })
-})
+}))
 
-lazy(MetaFile.prototype, 'json', function(){
-  return when(this.source, JSON.parse)
-})
+lazy(MetaFile.prototype, 'json', co(function*(){
+  return JSON.parse(yield this.source)
+}))
 
-lazy(MetaFile.prototype, 'javascript', function(){
-  return when(this.source, function(src){
-    return 'module.exports = ' + src
-  })
-})
+lazy(MetaFile.prototype, 'javascript', co(function*(){
+  return 'module.exports = ' + (yield this.source)
+}))
 
-function match(glob, file){
-  return toRegex(glob).test(file)
-}
-
-function isFile(path){
-  return fs.stat(path).then(function(stat){
-    return stat.isFile()
-  }, no)
-}
-
-function no(){ return false }
-
-function parents(dir){
-  var res = [dir]
-  do res.push(dir = path.dirname(dir))
-  while (dir != '/')
-  return res
-}
-
-/**
- * expose File
- */
-
-module.exports = exports = File
-exports.Meta = MetaFile
+module.exports = File
+File.Meta = MetaFile

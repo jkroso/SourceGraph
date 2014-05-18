@@ -15,14 +15,12 @@ module.exports = function(hydro) {
       require('hydro-file-suite'),
       require('hydro-focus'),
       require('hydro-chai'),
-      require('hydro-bdd')
+      require('hydro-bdd'),
+      require('hydro-co')
     ],
     chai: {
       chai: require('chai'),
-      plugins: [ 
-        require('chai-as-promised')
-      ],
-      styles: ['should', 'expect', 'assert'],
+      styles: ['should'],
       stack: true
     },
     globals: {
