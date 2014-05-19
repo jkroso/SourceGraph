@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+process.argv.push('--harmony')
 if (require('v8-argv')) return;
 
 var program = require('commander')
