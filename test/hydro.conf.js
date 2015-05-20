@@ -11,8 +11,11 @@ module.exports = function(hydro) {
   hydro.set({
     suite: 'sourcegraph',
     formatter: require('hydro-dot'),
+    timeout: 99999999,
+    'fail-fast': true,
     plugins: [
       require('hydro-file-suite'),
+      require('hydro-fail-fast'),
       require('hydro-focus'),
       require('hydro-chai'),
       require('hydro-bdd'),
