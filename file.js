@@ -45,16 +45,29 @@ File.extend = extend
 
 var file = File.prototype
 
-file.create = function(real, Class){
-  var file = this.cache[real]
+/**
+ * Reify a path as a File. If one is already in the cache
+ * it will be used. Otherwise a new one will be created
+ *
+ * @param {String} path
+ * @param {[Function]} Class
+ * @return {File}
+ */
+
+file.create = function(realPath, Class){
+  var file = this.cache[realPath]
   if (!(file instanceof File)) {
     Class = Class || File
-    file = new Class(real, this.cache)
+    file = new Class(realPath, this.cache)
     file.opts = this.opts
-    this.cache[real] = file
+    this.cache[realPath] = file
   }
   return file
 }
+
+/**
+ * The known symlinks of a file
+ */
 
 lazy(file, 'aliases', Array)
 
@@ -124,6 +137,10 @@ lazy(file, 'transforms', co(function*(){
   return []
 }))
 
+/**
+ * The files raw source after applying all transformations
+ */
+
 lazy(file, 'javascript', co(function*(){
   var mods = yield this.transforms
   if (!mods) return this.source
@@ -133,9 +150,17 @@ lazy(file, 'javascript', co(function*(){
   }, yield this.source)
 }), 'enumerable')
 
+/**
+ * The files raw source code
+ */
+
 lazy(file, 'source', function(){
   return fs.readFile(this.id, 'utf8')
 }, 'enumerable')
+
+/**
+ * The files raw dependencies as an Array of string
+ */
 
 lazy(file, 'requires', co(function*(){
   var js = yield this.javascript
@@ -145,6 +170,11 @@ lazy(file, 'requires', co(function*(){
     return /^[.\/]/.test(name) || !(name in natives)
   })
 }), 'enumerable')
+
+/**
+ * The files actual dependencies after apply some dependency resolution
+ * logic. It ends up being an Array of absolute paths
+ */
 
 lazy(file, 'dependencies', co(function*(){
   var req = yield this.requires
@@ -164,6 +194,12 @@ lazy(file, 'dependencies', co(function*(){
   })
 }), 'enumerable')
 
+/**
+ * The file that defines metadata about this file. Currently only
+ * package.json is supported but component.json could easily
+ * be supported also
+ */
+
 lazy(file, 'meta', co(function*(){
   var self = this
   var files = dirs(this.id).map(function(dir){
@@ -179,6 +215,10 @@ lazy(file, 'meta', co(function*(){
   var real = yield fs.realpath(file)
   return this.create(real, MetaFile)
 }))
+
+/**
+ * An Array of files this file depends on. As files themselves
+ */
 
 lazy(file, 'children', function(){
   var self = this
@@ -196,6 +236,12 @@ lazy(file, 'children', function(){
   })
 })
 
+/**
+ * A method which converts this file to a JSON friendly format
+ *
+ * @return {Object}
+ */
+
 file.toJSON = co(function*(){
   var children = yield this.children
   return {
@@ -211,10 +257,16 @@ file.toJSON = co(function*(){
 
 var MetaFile = File.extend()
 
+/**
+ * Kind of a hack but provides a way to find the entry
+ * file of a package
+ */
+
 lazy(MetaFile.prototype, 'requires', co(function*(){
   var pkg = yield this.json
   var res = [pkg.main || './index']
   if (pkg.extras) res = res.concat(pkg.extras)
+  // normalize the paths
   return res.map(function(name){
     if (/^[^.\/]/.test(name)) return './' + name
     return name
