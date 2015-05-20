@@ -18,10 +18,12 @@
     "browser-builtins": "*",
     "resolve-module": "*",
     "commander": "^2.2.0",
-    "result-co": "*",
-    "domify": "*"
+    "result-co": "0",
+    "result": "1",
+    "domify": "1"
   },
   "devDependencies": {
+    "html-browserify": "0.0.4",
     "hydro-co": "hydrojs/hydro-co#8c429a7",
     "hydro-file-suite": "*",
     "hydro-fail-fast": "0",

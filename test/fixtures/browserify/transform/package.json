@@ -1,0 +1,9 @@
+{
+  "name": "lame-ui",
+  "dependencies": {
+    "html-browserify": "0.0.4"
+  },
+  "browserify": {
+    "transform": "html-browserify"
+  }
+}

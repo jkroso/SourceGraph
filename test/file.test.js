@@ -78,6 +78,12 @@ describe('.javascript', function(){
     var js = yield new File(file).javascript
     js.should.eql(JSON.stringify({src: read(file), id: file}) + file)
   })
+
+  it('browserify transforms', function*(){
+    var file = fixture('browserify/transform/index.html')
+    var js = yield new File(file).javascript
+    js.should.eql('module.exports = ' + JSON.stringify(read(file)) + ';\n')
+  })
 })
 
 describe('.requires', function(){

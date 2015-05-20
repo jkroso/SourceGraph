@@ -1,4 +1,3 @@
-
 var lift = require('lift-result/cps')
 var browserResolve = lift(require('browser-resolve'))
 var browserModules = require('browser-builtins')
@@ -11,6 +10,7 @@ var lazy = require('lazy-property')
 var fs = require('lift-result/fs')
 var extend = require('extensible')
 var own = Object.hasOwnProperty
+var Result = require('result')
 var unique = require('unique')
 var map = require('map/async')
 var co = require('result-co')
@@ -58,32 +58,69 @@ file.create = function(real, Class){
 
 lazy(file, 'aliases', Array)
 
+/**
+ * The set of transformation functions that will be applied to this file
+ */
+
 lazy(file, 'transforms', co(function*(){
   var name = this.id
   try { var meta = yield this.meta }
   catch (_) { return [] }
   var pkg = yield meta.json
-  var transforms = pkg.transpile || []
-  if (this.opts && Array.isArray(this.opts.transpile)) {
-    transforms = transforms.concat(this.opts.transpile)
+
+  // uses sourcegraphs transform syntax
+  if (pkg.transpile) {
+    var transforms = pkg.transpile || []
+
+    // add global transforms
+    if (this.opts && Array.isArray(this.opts.transpile)) {
+      transforms = transforms.concat(this.opts.transpile)
+    }
+
+    // find the first glob matching this file and
+    // return the corresponding transformation functions
+    for (var i = 0, len = transforms.length; i < len;) {
+      var glob = transforms[i++]
+      var mods = transforms[i++]
+      if (!match(glob, name)) continue
+      if (!Array.isArray(mods)) mods = [mods]
+      return mods.map(function(mod){
+        if (typeof mod != 'string') return mod
+        if (/^!sourcegraph\/(\w+->\w+)/.test(mod)) {
+          return require(__dirname + '/transforms/' + RegExp.$1)
+        }
+        try {
+          return require(resolve(meta.id, mod))
+        } catch (_) {
+          throw new Error('requiring ' + mod + ' from ' + meta.id)
+        }
+      })
+    }
   }
-  for (var i = 0, len = transforms.length; i < len;) {
-    var glob = transforms[i++]
-    var mods = transforms[i++]
-    if (!match(glob, name)) continue
-    if (!Array.isArray(mods)) mods = [mods]
+
+  // useing browserify's syntax
+  if (pkg.browserify && pkg.browserify.transform) {
+    var mods = pkg.browserify.transform
+    if (typeof mods == 'string') mods = [mods]
     return mods.map(function(mod){
-      if (typeof mod != 'string') return mod
-      if (/^!sourcegraph\/(\w+->\w+)/.test(mod)) {
-        return require(__dirname + '/transforms/' + RegExp.$1)
-      }
       try {
-        return require(resolve(meta.id, mod))
+        mod = require(resolve(meta.id, mod))
       } catch (_) {
         throw new Error('requiring ' + mod + ' from ' + meta.id)
       }
+      return function(src, path){
+        var promise = new Result
+        var stream = mod(path)
+        var buf = ''
+        stream.on('error', function(e){ promise.error(e) })
+        stream.on('data', function(data){ buf += data })
+        stream.on('end', function(){ promise.write(buf) })
+        stream.end(src)
+        return promise
+      }
     })
   }
+
   return []
 }))
 
