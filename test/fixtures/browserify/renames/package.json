@@ -1,0 +1,9 @@
+{
+	"name": "renames",
+	"dependencies": {
+		"component-event": "*"
+	},
+	"browser": {
+    "event": "component-event"
+	}
+}

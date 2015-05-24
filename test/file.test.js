@@ -132,6 +132,12 @@ describe('.dependencies', function(){
       core['path']
     ])
   })
+
+  it('browserify renames', function*(){
+    var file = new File(fixture('browserify/renames/index.js'))
+    var deps = yield file.dependencies
+    deps.should.eql([fixture('browserify/node_modules/component-event/index.js')])
+  })
 })
 
 describe('.children', function(){
