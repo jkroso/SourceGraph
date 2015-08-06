@@ -2,10 +2,9 @@
   "name": "fixture",
   "main": "main.js",
   "transpile": [
-    "*/compose.trans", [
-      "to-object-transform",
-      "simple-transform"
-    ],
-    "*.trans", "simple-transform"
+    ["*/compose.trans",
+      ["to-object-transform"],
+      ["simple-transform"]],
+    ["*.trans", "simple-transform"]
   ]
 }

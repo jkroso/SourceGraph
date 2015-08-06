@@ -92,23 +92,29 @@ lazy(file, 'transforms', co(function*(){
 
     // find the first glob matching this file and
     // return the corresponding transformation functions
-    for (var i = 0, len = transforms.length; i < len;) {
-      var glob = transforms[i++]
-      var mods = transforms[i++]
+    for (var i = 0, l = transforms.length; i < l; i++) {
+      var transform = transforms[i]
+      var glob = transform[0]
       if (!match(glob, name)) continue
-      if (!Array.isArray(mods)) mods = [mods]
+      var mods = transform.slice(1)
+      if (!Array.isArray(mods[0])) mods = [mods]
       return mods.map(function(mod){
-        if (typeof mod != 'string') return mod
-        if (/^!sourcegraph\/(\w+->\w+)/.test(mod)) {
-          return require(__dirname + '/transforms/' + RegExp.$1)
+        var path = mod[0]
+        var options = mod[1]
+        if (typeof path != 'string') return path // already a function
+        if (/^!sourcegraph\/(\w+->\w+)/.test(path)) {
+          path = __dirname + '/transforms/' + RegExp.$1
         }
         try {
-          return require(resolve(meta.id, mod))
+          var fn = require(resolve(meta.id, path))
         } catch (error) {
-          error.message = 'while requiring ' + mod + ' from ' + meta.id
+          error.message = 'while requiring ' + path + ' from ' + meta.id
                         + ': ' + error.message
           throw error
         }
+        return options != null
+          ? function(source){ return fn(source, options) }
+          : fn
       })
     }
   }

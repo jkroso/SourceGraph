@@ -43,7 +43,7 @@ describe('.transforms', function(){
   it('global transforms', function*(){
     var file = new File(fixture('package.json'))
     var json = function(src){ return 'module.exports =' + src }
-    file.opts = {'transpile': ['*.json', json]};
+    file.opts = {'transpile': [['*.json', json]]};
     (yield file.transforms).should.eql([json])
   })
 
