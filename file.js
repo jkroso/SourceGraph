@@ -118,6 +118,10 @@ lazy(file, 'transforms', co(function*(){
     var mods = pkg.browserify.transform
     if (typeof mods == 'string') mods = [mods]
     return mods.map(function(mod){
+      if (Array.isArray(mod)) {
+        var options = mod[1]
+        var mod = mod[0]
+      }
       try {
         mod = require(resolve(meta.id, mod))
       } catch (error) {
@@ -127,7 +131,7 @@ lazy(file, 'transforms', co(function*(){
       }
       return function(src, path){
         var promise = new Result
-        var stream = mod(path)
+        var stream = mod(path, options)
         var buf = ''
         stream.on('error', function(e){ promise.error(e) })
         stream.on('data', function(data){ buf += data })
