@@ -104,8 +104,10 @@ lazy(file, 'transforms', co(function*(){
         }
         try {
           return require(resolve(meta.id, mod))
-        } catch (_) {
-          throw new Error('requiring ' + mod + ' from ' + meta.id)
+        } catch (error) {
+          error.message = 'while requiring ' + mod + ' from ' + meta.id
+                        + ': ' + error.message
+          throw error
         }
       })
     }
@@ -118,8 +120,10 @@ lazy(file, 'transforms', co(function*(){
     return mods.map(function(mod){
       try {
         mod = require(resolve(meta.id, mod))
-      } catch (_) {
-        throw new Error('requiring ' + mod + ' from ' + meta.id)
+      } catch (error) {
+        error.message = 'while requiring ' + mod + ' from ' + meta.id
+                      + ': ' + error.message
+        throw error
       }
       return function(src, path){
         var promise = new Result
