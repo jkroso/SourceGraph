@@ -20,7 +20,8 @@
     "commander": "2",
     "result-co": "0",
     "result": "1",
-    "domify": "1"
+    "domify": "1",
+    "babel": "*"
   },
   "devDependencies": {
     "html-browserify": "0.0.4",
