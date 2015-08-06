@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "dependencies": {
     "extensible": "jkroso/extensible#0.3.0",
     "foreach": "jkroso/forEach#0.8.10",
