@@ -1,4 +1,4 @@
-var babel = require('babel')
+var babel = require('babel-core')
 
 module.exports = function(es6, path, options) {
   options = Object.create(options)

@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "dependencies": {
     "extensible": "jkroso/extensible#0.3.0",
     "foreach": "jkroso/forEach#0.8.10",
@@ -17,11 +17,11 @@
     "resolve-module": "0",
     "lazy-property": "0",
     "lift-result": "0",
+    "babel-core": "*",
     "commander": "2",
     "result-co": "0",
     "result": "1",
-    "domify": "1",
-    "babel": "*"
+    "domify": "1"
   },
   "devDependencies": {
     "html-browserify": "0.0.4",
