@@ -83,7 +83,7 @@ lazy(file, 'transforms', co(function*(){
 
   // uses sourcegraphs transform syntax
   if (pkg.transpile) {
-    var transforms = pkg.transpile || []
+    var transforms = pkg.transpile
 
     // add global transforms
     if (this.opts && Array.isArray(this.opts.transpile)) {
