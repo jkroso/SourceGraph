@@ -113,7 +113,7 @@ lazy(file, 'transforms', co(function*(){
           throw error
         }
         return options != null
-          ? function(source){ return fn(source, options) }
+          ? function(source, path){ return fn(source, path, options) }
           : fn
       })
     }
