@@ -5,7 +5,6 @@
     "babel-plugin-runtime": "jkroso/babel-plugin-runtime#build",
     "extensible": "jkroso/extensible#0.3.0",
     "foreach": "jkroso/forEach#0.8.10",
-    "v8-argv": "jkroso/v8-argv#1.1.1",
     "detect": "jkroso/detect#0.3.4",
     "unique": "jkroso/unique#0.0.1",
     "reduce": "jkroso/reduce#0.1.5",
