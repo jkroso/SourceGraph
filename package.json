@@ -2,6 +2,7 @@
   "name": "sourcegraph",
   "version": "0.11.1",
   "dependencies": {
+    "babel-plugin-runtime": "jkroso/babel-plugin-runtime#build",
     "extensible": "jkroso/extensible#0.3.0",
     "foreach": "jkroso/forEach#0.8.10",
     "v8-argv": "jkroso/v8-argv#1.1.1",
@@ -38,5 +39,6 @@
   "repository": "git://github.com/jkroso/sourcegraph.git",
   "files": ["file.js", "index.js", "bin", "transforms"],
   "bin": { "sourcegraph": "bin/sourcegraph"},
-  "author": "Jake Rosoman"
+  "author": "Jake Rosoman",
+  "license": "MIT"
 }
