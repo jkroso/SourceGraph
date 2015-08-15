@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.11.3",
+  "version": "0.11.4",
   "dependencies": {
     "babel-plugin-runtime": "jkroso/babel-plugin-runtime#build",
     "extensible": "jkroso/extensible#0.3.0",
