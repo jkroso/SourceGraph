@@ -16,6 +16,7 @@
     "glob-to-regexp": "0",
     "resolve-module": "0",
     "lazy-property": "0",
+    "JSX": "jkroso/JSX",
     "lift-result": "0",
     "babel-core": "*",
     "commander": "2",

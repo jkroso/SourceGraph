@@ -1,3 +1,4 @@
+/* globals read fixture */
 
 var core = require('browser-builtins')
 var File = require('../file')
@@ -83,6 +84,16 @@ describe('.javascript', function(){
     var file = fixture('browserify/transform/index.html')
     var js = yield new File(file).javascript
     js.should.eql('module.exports = ' + JSON.stringify(read(file)) + ';\n')
+  })
+})
+
+describe('builtin transforms', function(){
+  it('babel', function*() {
+    const file = new File()
+    file.source = '<a/>'
+    file.transforms = [require('../transforms/babel->js')]
+    const js = yield file.javascript
+    js.should.eql('"use strict";\n\nJSX("a");')
   })
 })
 
