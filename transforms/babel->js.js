@@ -7,7 +7,6 @@ module.exports = function(es6, path, options) {
   options = Object.create(options || null)
   options.filename = path
   options.blacklist = (options.blacklist || []).concat('react')
-  options.plugins = (options.plugins || []).concat(plugin)
-  const ast = JSX(babel.parse(es6))
-  return babel.transform.fromAst(ast, null, options).code
+  options.plugins = (options.plugins || []).concat(plugin, JSX.babel_plugin)
+  return babel.transform(es6, options).code
 }

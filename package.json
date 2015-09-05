@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.12.3",
+  "version": "0.12.4",
   "dependencies": {
     "babel-plugin-jkroso-runtime": "jkroso/babel-plugin-runtime#build",
     "browser-builtins": "jkroso/node-browser-builtins#fix-typos",
