@@ -1,6 +1,6 @@
 var babel = require('babel-core')
+var JSX = require('jsx-to-js')
 var path = require('path')
-var JSX = require('JSX')
 var plugin = path.dirname(require.resolve('babel-plugin-jkroso-runtime/package'))
 
 module.exports = function(es6, path, options) {

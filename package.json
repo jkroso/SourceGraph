@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "dependencies": {
     "babel-plugin-jkroso-runtime": "jkroso/babel-plugin-runtime#build",
     "extensible": "jkroso/extensible#0.3.0",
@@ -16,9 +16,9 @@
     "glob-to-regexp": "0",
     "resolve-module": "0",
     "lazy-property": "0",
-    "JSX": "jkroso/JSX",
     "lift-result": "0",
     "babel-core": "*",
+    "jsx-to-js": "0",
     "commander": "2",
     "result-co": "0",
     "result": "1",
