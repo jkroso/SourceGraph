@@ -119,6 +119,9 @@ lazy(file, 'transforms', co(function*(){
     }
   }
 
+  // a default json transform
+  if (/\.json$/.test(name)) return [require('./transforms/json->js')]
+
   // useing browserify's syntax
   if (pkg.browserify && pkg.browserify.transform) {
     var mods = pkg.browserify.transform
