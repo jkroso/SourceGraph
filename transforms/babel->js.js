@@ -8,5 +8,6 @@ module.exports = function(es6, path, options) {
   options.filename = path
   options.blacklist = (options.blacklist || []).concat('react')
   options.plugins = (options.plugins || []).concat(plugin)
-  return babel.transform.fromAst(JSX(es6), null, options).code
+  const ast = JSX(babel.parse(es6))
+  return babel.transform.fromAst(ast, null, options).code
 }
