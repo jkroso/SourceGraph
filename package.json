@@ -3,7 +3,6 @@
   "version": "0.12.4",
   "dependencies": {
     "babel-plugin-jkroso-runtime": "jkroso/babel-plugin-runtime#build",
-    "browser-builtins": "jkroso/node-browser-builtins#fix-typos",
     "extensible": "jkroso/extensible#0.3.0",
     "foreach": "jkroso/forEach#0.8.10",
     "detect": "jkroso/detect#0.3.4",
@@ -12,6 +11,7 @@
     "merge": "yields/merge#2f357cb",
     "mine": "jkroso/mine#fbd768c",
     "map": "jkroso/map#0.2.11",
+    "browser-builtins": ">=3.3.1",
     "browser-resolve": "1",
     "glob-to-regexp": "0",
     "resolve-module": "0",
