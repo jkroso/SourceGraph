@@ -26,7 +26,7 @@ var isFile = co(function*(path){
 })
 
 function match(glob, file){
-  return toRegex(glob).test(file)
+  return toRegex(glob, {extended: true}).test(file)
 }
 
 function dirs(dir){
@@ -80,6 +80,7 @@ lazy(file, 'transforms', co(function*(){
   try { var meta = yield this.meta }
   catch (_) { return [] }
   var pkg = yield meta.json
+  var dir = path.dirname(meta.id)
 
   // uses sourcegraphs transform syntax
   if (pkg.transpile) {
@@ -94,7 +95,7 @@ lazy(file, 'transforms', co(function*(){
     // return the corresponding transformation functions
     for (var i = 0, l = transforms.length; i < l; i++) {
       var transform = transforms[i]
-      var glob = transform[0]
+      var glob = path.join(dir, transform[0])
       if (!match(glob, name)) continue
       var mods = transform.slice(1)
       if (!Array.isArray(mods[0])) mods = [mods]
