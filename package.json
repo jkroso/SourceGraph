@@ -1,8 +1,12 @@
 {
   "name": "sourcegraph",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "dependencies": {
     "babel-preset-es2015": "6",
+    "babel-preset-stage-0": "6",
+    "babel-preset-stage-1": "6",
+    "babel-preset-stage-2": "6",
+    "babel-preset-stage-3": "6",
     "babel-plugin-syntax-jsx": "6",
     "extensible": "jkroso/extensible#0.3.0",
     "foreach": "jkroso/forEach#0.8.10",
