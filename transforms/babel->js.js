@@ -1,11 +1,15 @@
-var runtime = require('babel-plugin-jkroso-runtime')
 var babel = require('babel-core')
-var JSX = require('jsx-to-js')
+
+var presets = [require('babel-preset-es2015')]
+var plugins = [
+  require('babel-plugin-syntax-jsx'),
+  require('jsx-to-js').babel_plugin,
+]
 
 module.exports = function(es6, path, options) {
   options = Object.create(options || null)
   options.filename = path
-  options.blacklist = (options.blacklist || []).concat('react')
-  options.plugins = (options.plugins || []).concat(JSX.babel_plugin, runtime)
+  options.presets = (options.presets || []).concat(presets)
+  options.plugins = (options.plugins || []).concat(plugins)
   return babel.transform(es6, options).code
 }
