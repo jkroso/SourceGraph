@@ -10,7 +10,7 @@ var stages = [
 var plugins = [
   require('babel-plugin-syntax-jsx'),
   require('jsx-to-js').babel_plugin,
-  require('babel-plugin-jkroso-runtime'),
+  require('@jkroso/babel-plugin-runtime')
 ]
 
 module.exports = function(es6, path, options) {
