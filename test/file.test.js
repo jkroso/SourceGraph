@@ -93,7 +93,7 @@ describe('builtin transforms', function(){
     file.source = '<a/>'
     file.transforms = [require('../transforms/babel->js')]
     const js = yield file.javascript
-    js.should.eql('"use strict";\n\nJSX("a");')
+    js.should.eql('JSX("a");')
   })
 })
 
