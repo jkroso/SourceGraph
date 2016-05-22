@@ -14,7 +14,7 @@ var plugins = [
 ]
 
 module.exports = function(es6, path, options) {
-  options = Object.create(options || null)
+  options = Object.assign({}, options || null)
   options.filename = path
   if (typeof options.stage == 'number') {
     options.presets = (options.presets || []).concat(es2015)
