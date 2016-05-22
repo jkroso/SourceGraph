@@ -15,9 +15,12 @@ var plugins = [
 
 module.exports = function(es6, path, options) {
   options = Object.create(options || null)
-  var stage = typeof options.stage == 'number' ? options.stage : 2
   options.filename = path
-  options.presets = (options.presets || []).concat(es2015, stages[stage])
+  options.presets = (options.presets || []).concat(es2015)
+  if (typeof options.stage == 'number') {
+    options.presets.push(stages[options.stage])
+    delete options.stage
+  }
   options.plugins = (options.plugins || []).concat(plugins)
   return babel.transform(es6, options).code
 }
