@@ -16,8 +16,8 @@ var plugins = [
 module.exports = function(es6, path, options) {
   options = Object.create(options || null)
   options.filename = path
-  options.presets = (options.presets || []).concat(es2015)
   if (typeof options.stage == 'number') {
+    options.presets = (options.presets || []).concat(es2015)
     options.presets.push(stages[options.stage])
     delete options.stage
   }
