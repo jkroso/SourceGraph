@@ -1,6 +1,6 @@
 {
   "name": "sourcegraph",
-  "version": "0.13.6",
+  "version": "0.13.7",
   "dependencies": {
     "babel-preset-es2015": "6",
     "babel-preset-stage-0": "6",
